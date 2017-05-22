@@ -1091,7 +1091,7 @@ namespace AnimChainsSheetPacker
             }
 
             // needs changing ?
-            //animChainListData.CoordinateType = FlatRedBall.Graphics.TextureCoordinateType.
+            //animChainListData.CoordinateType = FlatRedBall.Graphics.TextureCoordinateType.?
 
             animChainListSave.Save(outputAchxFilePath);
         }
