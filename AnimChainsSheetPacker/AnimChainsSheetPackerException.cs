@@ -38,6 +38,7 @@ namespace AnimChainsSheetPacker
         NotSupported_AnimationFrame_Flipped,
         InputImage_ZeroSize,
         InputImage_NotFound,
-        SpriteSheetPacker_Error
+        SpriteSheetPacker_Error,
+        OutputImage_Error
     }
 }

@@ -38,6 +38,7 @@
     <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <DocumentationFile>bin\Debug\AnimChainsSheetPacker.XML</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
     <OutputPath>bin\x86\Release\</OutputPath>
@@ -48,6 +49,7 @@
     <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <DocumentationFile>bin\x86\Release\AnimChainsSheetPacker.XML</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="FlatRedBall">
@@ -74,6 +76,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AnimChainsSheetPackerException.cs" />
+    <Compile Include="BitmapManipulation.cs" />
     <Compile Include="DataTypes\DecimalRect.cs" />
     <Compile Include="DataTypes\PixelsFrame.cs" />
     <Compile Include="DataTypes\SSPData.cs" />

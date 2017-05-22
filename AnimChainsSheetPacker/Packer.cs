@@ -18,6 +18,7 @@ using System.Diagnostics;
 
 using Rectangle = System.Drawing.Rectangle;
 using Size = System.Drawing.Size;
+using Color = System.Drawing.Color;
 
 using AnimChainsSheetPacker.DataTypes;
 
@@ -25,6 +26,7 @@ using AnimChainsSheetPacker.DataTypes;
 
 namespace AnimChainsSheetPacker
 {
+    /// <summary>Main and only class of AnimChainsSheetPacker lib.</summary>
     public sealed class Packer
     {
         /// <summary>Takes .achx file, packs together sprites in .achx' sprite sheet and updates .achx file so all it's animations work the same as in original.</summary>
@@ -39,7 +41,10 @@ namespace AnimChainsSheetPacker
         /// <param name="maxSheetSize"></param>
         /// <param name="forceSquareSheet">(Some hardwares and graphic libraries require this.)</param>
         /// 
-        /// <param name="offsetForAllFrames">Adds Relative</param>
+        /// <param name="offsetForAllFrames">Adds RelativeX,Y to all output Frames.</param>
+        /// 
+        /// <param name="resultSheetTransparentColor">SpriteSheetPacked messes transparent pixels RGB value, setting it to black, no matter what was original sheet color.
+        /// If you require / prefer the color to be different, you can set it here.</param>
         public static void PackAchx(
                 string inputAchxFilePath,
 
@@ -49,7 +54,8 @@ namespace AnimChainsSheetPacker
 
                 uint sheetBorder = 0, uint spritesBorders = 0, bool sheetPowerOf2 = false, uint maxSheetSize = 8192, bool forceSquareSheet = false,
 
-                Vector2 offsetForAllFrames = new Vector2()
+                Vector2 offsetForAllFrames = new Vector2(),
+                Color? resultSheetTransparentColor = null
         )
         {
             // -- Preparation
@@ -89,6 +95,8 @@ namespace AnimChainsSheetPacker
                 spriteImagesExportDir
             );
 
+            originalSpriteSheetBmp.Dispose();
+
             /* More options than plain commandline args, but crashes SpriteSheetPacker thanks to some bug in it (reported).
             Main.RunPackerCommandline(
                 spriteSheetPackerExeFilePath, 
@@ -108,7 +116,28 @@ namespace AnimChainsSheetPacker
                     Path.Combine(workDirectory, "Sprites.json" )
                 );
 
-            Size resultSheetSize = GetResultSheetSize(workDirectory);
+            Size resultSheetSize;
+            if (resultSheetTransparentColor.HasValue)
+            {
+                string resultSheetFilePath = Path.Combine(workDirectory, "Sprites.png");
+
+                // v1: throsw GDI+ exception
+                //Bitmap resultBmp = new Bitmap( resultSheetFilePath );
+                // v2:
+                string tempImageFilePath;
+                Bitmap resultBmp = LoadResultSheetNoLock(resultSheetFilePath, out tempImageFilePath);
+
+                resultSheetSize = resultBmp.Size;
+
+                ChangeResultSheetTransparentColor(resultBmp, resultSheetTransparentColor.Value);
+
+                resultBmp.Save(resultSheetFilePath, ImageFormat.Png);
+                resultBmp.Dispose();
+
+                File.Delete(tempImageFilePath);
+            }
+            else
+                resultSheetSize = GetResultSheetSize(workDirectory);
 
             UpdateAnimChains(
                 animChainsListSave,
@@ -175,7 +204,6 @@ namespace AnimChainsSheetPacker
                 Directory.Delete(workDirectory, true);
             }
         }
-
 
 
 
@@ -274,6 +302,7 @@ namespace AnimChainsSheetPacker
             return convertedSheetBmp;
         }
 
+        /// <returns>Absolute path of SpriteSheet image referenced by achx</returns>
         public static string GetSpriteSheetImageFilePaths(
             bool relativeToAchx, string frameFilePath, string achxDir, 
             out string spriteSheetDir, out string spriteSheetFileName
@@ -580,7 +609,7 @@ namespace AnimChainsSheetPacker
 
         // --- "SpriteSheet Packer"
         // - Run
-        /// <summary>This function blocks until SpriteSheet Packer finishes the job and returns.</summary>
+        /*/// <summary>This function blocks until SpriteSheet Packer finishes the job and returns.</summary>
         /// <param name="packerExePath"></param>
         /// <param name="inputDir">Path to folder with seaprated sprite images.</param>
         /// <param name="outputDir">Path to folder where resulting packed sprite sheet and data will be saved.</param>
@@ -591,7 +620,7 @@ namespace AnimChainsSheetPacker
         /// <param name="sheetPowerOf2">Resutling sheet size will be power of 2.</param>
         /// <param name="maxSheetSize"></param>
         /// <param name="forceSquareSheet"></param>
-        /*public static void RunPackerCommandline(
+        public static void RunPackerCommandline(
                 string packerExePath, string inputDir, string outputDir, 
                 string originalSpriteSheetDir, string originalSpriteSheetFileName,
                 uint sheetBorder = 0, uint spritesBorders = 0, bool sheetPowerOf2 = false, uint maxSheetSize = 8192, bool forceSquareSheet = false
@@ -664,6 +693,15 @@ namespace AnimChainsSheetPacker
 
             MessageBox.Show("SpriteSheetPacker ExitCode: " + process.ExitCode);
         }*/
+        /// <summary>This function blocks until SpriteSheet Packer finishes the job and returns.</summary>
+        /// <param name="packerExeDir"></param>
+        /// <param name="inputDir">Path to folder with seaprated sprite images.</param>
+        /// <param name="outputDir">Path to folder where resulting packed sprite sheet and data will be saved.</param>
+        /// <param name="sheetBorder">Adds transparent margin around the whole result sheet.</param>
+        /// <param name="spritesBorders">Adds transparent margin around every sprite.</param>
+        /// <param name="sheetPowerOf2">Resutling sheet size will be power of 2.</param>
+        /// <param name="maxSheetSize"></param>
+        /// <param name="forceSquareSheet"></param>
         public static void RunPackerCommandline(
                 string packerExeDir, string inputDir, string outputDir,
                 uint sheetBorder = 0, uint spritesBorders = 0, bool sheetPowerOf2 = false, uint maxSheetSize = 8192, bool forceSquareSheet = false
@@ -777,6 +815,9 @@ namespace AnimChainsSheetPacker
 
         // -- "SpriteSheet Packer" json
         // - Load to objects
+        /// <summary>Deserializes Json file produced by SpriteSheet Packer</summary>
+        /// <param name="jsonFilePath"></param>
+        /// <returns></returns>
         public static Dictionary<string, SSPFrame> LoadPackerJson(string jsonFilePath)
         {
             string json = File.ReadAllText(jsonFilePath);
@@ -790,16 +831,42 @@ namespace AnimChainsSheetPacker
 
         // -- "SpriteSheet Packer" result sprite sheet
         // - Get sizes
-        public static Size GetResultSheetSize(string inputDir)
+        public static Size GetResultSheetSize(string outputDir)
         {
             Bitmap resultBmp = 
                 //Bitmap.FromFile(Path.Combine(inputDir, "Sprites.png"));
-                new Bitmap( Path.Combine(inputDir, "Sprites.png") );
+                new Bitmap( Path.Combine(outputDir, "Sprites.png") );
             Size size = resultBmp.Size;
             resultBmp.Dispose();
             return size;
         }
 
+        // Hack around Bitmap locking it's file on disk
+        private static Bitmap LoadResultSheetNoLock(string imageFilePath, out string tempImageFilePath)
+        {
+            tempImageFilePath = Path.Combine(Path.GetDirectoryName(imageFilePath), "Sprites_temp.png");
+
+            File.Move(
+                imageFilePath,
+                tempImageFilePath
+            );
+
+            return new Bitmap(tempImageFilePath);
+        }
+
+
+
+
+        // - Fix transparent color
+        public static void ChangeResultSheetTransparentColor(string workDir, Color color)
+        {
+            var bitmap = new Bitmap(Path.Combine(workDir, "Sprites.png"));
+            ChangeResultSheetTransparentColor(bitmap, color);
+        }
+        public static void ChangeResultSheetTransparentColor(Bitmap resultBitmap, Color color)
+        {
+            BitmapManipulation.SetTransparentColor(resultBitmap, color);
+        }
 
 
 
