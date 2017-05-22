@@ -17,10 +17,9 @@ using Microsoft.Xna.Framework;
 using System.Diagnostics;
 
 using Rectangle = System.Drawing.Rectangle;
+using Size = System.Drawing.Size;
 
 using AnimChainsSheetPacker.DataTypes;
-
-//using RCommonFRB;
 
 
 
@@ -30,7 +29,7 @@ namespace AnimChainsSheetPacker
     {
         /// <summary>Takes .achx file, packs together sprites in .achx' sprite sheet and updates .achx file so all it's animations work the same as in original.</summary>
         /// <param name="inputAchxFilePath">Path w file name w ext.</param>
-        /// <param name="spriteSheetPackerExeFilePath">Path to SpriteSheet Packer install dir.</param>
+        /// <param name="spriteSheetPackerDir">Path to SpriteSheet Packer install dir (where the exe is).</param>
         /// <param name="outputDirectory">If ommited, original achx file and it's sprite sheet file will be overwritten with packed versions.</param>
         /// <param name="workDirectory">If you want to keep all the working files.</param>
         /// 
@@ -44,7 +43,7 @@ namespace AnimChainsSheetPacker
         public static void PackAchx(
                 string inputAchxFilePath,
 
-                string spriteSheetPackerExeFilePath,
+                string spriteSheetPackerDir,
                 string outputDirectory = null,
                 string workDirectory = null,
 
@@ -99,26 +98,17 @@ namespace AnimChainsSheetPacker
             );*/
             // Plain commandline args version
             RunPackerCommandline(
-                spriteSheetPackerExeFilePath, 
+                spriteSheetPackerDir, 
                 spriteImagesExportDir, workDirectory,
                 sheetBorder, spritesBorders, sheetPowerOf2, maxSheetSize, forceSquareSheet
             );
-
-            /*if (overwriteInputFiles)
-            {
-
-            }
-            else
-            {
-
-            }*/
 
             Dictionary<string, SSPFrame> packedFramesData = LoadPackerJson( 
                     //Path.Combine(workDirectory, "Result", Path.GetFileNameWithoutExtension(originalSpriteSheetFileName) + ".json" )
                     Path.Combine(workDirectory, "Sprites.json" )
                 );
 
-            System.Drawing.Size resultSheetSize = GetResultSheetSize(workDirectory);
+            Size resultSheetSize = GetResultSheetSize(workDirectory);
 
             UpdateAnimChains(
                 animChainsListSave,
@@ -129,13 +119,53 @@ namespace AnimChainsSheetPacker
             );
 
             if (overwriteInputFiles)
+            {
+                // Save achx to original achx path
                 SaveAchx(animChainsListSave, inputAchxFilePath, inputAchxFilePath);
-            else
-                SaveAchx(
-                    animChainsListSave, 
-                    inputAchxFilePath, 
-                    Path.Combine(outputDirectory, Path.GetFileName(inputAchxFilePath))
+
+                string originalSpriteSheetFilePath = Path.Combine(originalSpriteSheetDir, originalSpriteSheetFileName);
+
+                // Delete original sheet file
+                //File.Delete(originalSpriteSheetFilePath);
+
+                // Backup original sheet file
+                File.Move(
+                    originalSpriteSheetFilePath,
+                    Path.Combine(originalSpriteSheetDir, Path.GetFileNameWithoutExtension(originalSpriteSheetFileName) + "_backup" + Path.GetExtension(originalSpriteSheetFileName))
                 );
+
+                // Move result sheet file to original sheet file dir with original sheet file name
+                File.Move(
+                    Path.Combine(workDirectory, "Sprites.png"),
+                    Path.Combine(originalSpriteSheetDir, Path.GetFileNameWithoutExtension(originalSpriteSheetFileName) + ".png")
+                );
+            }
+            else // !overwriteInputFiles means outputDirectory != null
+            {
+                SaveAchx(
+                    animChainsListSave,
+                    Path.Combine(outputDirectory, "Packed.achx"),
+                    // Path.Combine(outputDirectory, Path.GetFileName(inputAchxFilePath))
+                    inputAchxFilePath
+                );
+
+                string resultSheetFilePath = Path.Combine(outputDirectory, Path.GetFileNameWithoutExtension(originalSpriteSheetFileName) + ".png");
+
+                // Move result sheet file to output dir with original sheet file name
+                if (File.Exists(resultSheetFilePath))
+                {
+                    // Backup exiting sheet file
+                    File.Move(
+                        resultSheetFilePath,
+                        Path.Combine(outputDirectory, Path.GetFileNameWithoutExtension(originalSpriteSheetFileName) + "_backup.png")
+                    );
+                }
+
+                File.Move(
+                    Path.Combine(workDirectory, "Sprites.png"),
+                    resultSheetFilePath
+                );
+            }
 
 
 
@@ -635,7 +665,7 @@ namespace AnimChainsSheetPacker
             MessageBox.Show("SpriteSheetPacker ExitCode: " + process.ExitCode);
         }*/
         public static void RunPackerCommandline(
-                string packerExePath, string inputDir, string outputDir,
+                string packerExeDir, string inputDir, string outputDir,
                 uint sheetBorder = 0, uint spritesBorders = 0, bool sheetPowerOf2 = false, uint maxSheetSize = 8192, bool forceSquareSheet = false
             )
         {
@@ -675,7 +705,7 @@ namespace AnimChainsSheetPacker
             var process = new Process {
                 StartInfo = new ProcessStartInfo
                 {
-                    FileName = Path.Combine(packerExePath, "SpriteSheetPacker.exe"),
+                    FileName = Path.Combine(packerExeDir, "SpriteSheetPacker.exe"),
                     Arguments = args,
                     RedirectStandardOutput = true,
                     RedirectStandardError = true,
