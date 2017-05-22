@@ -1,4 +1,4 @@
-Utility for packing sprite sheets referenced by FlatRedBall engine AnimChainList anim files.  
+Utility for packing sprite sheets coupled with FlatRedBall engine's AnimChainList anim files.  
 https://github.com/vchelaru/FlatRedBall  
   
 Uses amakaseev's SpriteSheet Packer commandline tool for the packing operations.  
