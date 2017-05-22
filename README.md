@@ -12,7 +12,7 @@ The tool has to be present on the computer for AnimChainsSheetPacker to work.
     For simple use include in your project and use Packer.PackAchx(..) static method.
   
 - AnimChainsSheetPackerGUI  
-    GUI frontend for the library.  
-    Currently unfinished and probably unstable. Do not use on live data.
+    Windows GUI frontend for the library.  
+    Not yet finished and probably unstable. Do not use with live data.
     
   
