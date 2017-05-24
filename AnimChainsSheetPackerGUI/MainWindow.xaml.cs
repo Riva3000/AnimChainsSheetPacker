@@ -93,7 +93,7 @@ namespace AnimChainsSheetPacker
             set { SetField(ref _SSPDir, value, "SSPDir"); }
         }
 
-        private string _SourceAchx = @"W:\Programing\VisualStudio2015 Projects\TexturePackerFRBImport_misc\TestData\Input\MinimalTest01.achx";
+        private string _SourceAchx = @"W:\Programing\VisualStudio2015 Projects\TexturePackerFRBImport_misc\TestData\Input\Main_incomplete.achx";
         public string SourceAchx
         {
             get { return _SourceAchx; }
@@ -339,7 +339,8 @@ namespace AnimChainsSheetPacker
                     return;
                 }
 
-                throw;
+                _AddMsg("Uknown error:" + ex.Message, Brushes.Red);
+                return;
             }
         }
 
