@@ -325,7 +325,7 @@ namespace AnimChainsSheetPacker
                     _OutputDir, 
                     // Work (temp) dir
                     // !! throw GDI error when null = Windows Temp dir - investigate
-                    _OutputDir,
+                    _WorkDir,
 
                     (uint)_SheetBorder, (uint)_SpritesBorders, _SheetPowerOf2, (uint)_MaxSheetSize, _ForceSquareSheet
                 );
@@ -360,7 +360,9 @@ namespace AnimChainsSheetPacker
                             return;
 
                         default:
-                            throw new Exception("Unknown AnimChainsSheetPackerErrorCode (" + (byte)myEx.ErrorCode + ')', myEx);
+                            //throw new Exception("Unknown AnimChainsSheetPackerErrorCode (" + (byte)myEx.ErrorCode + ')', myEx);
+                            _AddMsg("Unknown AnimChainsSheetPackerErrorCode (" + (byte)myEx.ErrorCode + ')', Brushes.Red);
+                            return;
                     }
                 }
 
