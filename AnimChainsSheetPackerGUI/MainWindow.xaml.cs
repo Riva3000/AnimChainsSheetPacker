@@ -93,7 +93,7 @@ namespace AnimChainsSheetPacker
             set { SetField(ref _SSPDir, value, "SSPDir"); }
         }
 
-        private string _SourceAchx = @"W:\Programing\VisualStudio2015 Projects\TexturePackerFRBImport_misc\TestData\Input\Main_incomplete.achx";
+        private string _SourceAchx = @"W:\Programing\VisualStudio2015 Projects\TexturePackerFRBImport_misc\TestData\Input\MinimalTest01.achx";
         public string SourceAchx
         {
             get { return _SourceAchx; }
@@ -128,6 +128,29 @@ namespace AnimChainsSheetPacker
 
 
 
+
+        #region    --- INotifyPropertyChanged implementation
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        protected virtual void OnPropertyChanged(string propertyName)
+        {
+            PropertyChangedEventHandler handler = PropertyChanged;
+            if (handler != null)
+                handler(this, new PropertyChangedEventArgs(propertyName));
+        }
+
+        protected bool SetField<T>(ref T field, T value, string propertyName)
+        {
+            if (EqualityComparer<T>.Default.Equals(field, value))
+                return false;
+
+            // else
+            field = value;
+
+            OnPropertyChanged(propertyName);
+            return true;
+        }
+        #endregion --- INotifyPropertyChanged implementation END
 
 
         private bool _ShowOpenFileDialog(string title, string filter, out string resultFilePathName)
@@ -294,7 +317,16 @@ namespace AnimChainsSheetPacker
             try
             {
                 Packer.PackAchx(
-                    _SourceAchx, _SSPDir, _OutputDir, null,
+                    // input .achx file path name ext 
+                    _SourceAchx,
+                    // SpriteSheet Packer dir
+                    _SSPDir,
+                    // Output dir
+                    _OutputDir, 
+                    // Work (temp) dir
+                    // !! throw GDI error when null = Windows Temp dir - investigate
+                    _OutputDir,
+
                     (uint)_SheetBorder, (uint)_SpritesBorders, _SheetPowerOf2, (uint)_MaxSheetSize, _ForceSquareSheet
                 );
             }
@@ -343,30 +375,6 @@ namespace AnimChainsSheetPacker
                 return;
             }
         }
-
-
-        #region    --- INotifyPropertyChanged implementation
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        protected virtual void OnPropertyChanged(string propertyName)
-        {
-            PropertyChangedEventHandler handler = PropertyChanged;
-            if (handler != null)
-                handler(this, new PropertyChangedEventArgs(propertyName));
-        }
-
-        protected bool SetField<T>(ref T field, T value, string propertyName)
-        {
-            if (EqualityComparer<T>.Default.Equals(field, value))
-                return false;
-
-            // else
-            field = value;
-
-            OnPropertyChanged(propertyName);
-            return true;
-        }
-        #endregion --- INotifyPropertyChanged implementation END
 
         private void ButSheetMaxSize_Click(object sender, RoutedEventArgs e)
         {
