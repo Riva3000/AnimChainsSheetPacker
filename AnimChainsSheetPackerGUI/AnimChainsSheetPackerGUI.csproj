@@ -54,6 +54,9 @@
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
     <Prefer32Bit>true</Prefer32Bit>
   </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationIcon>icon.ico</ApplicationIcon>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="FlatRedBall">
       <HintPath>C:\Program Files (x86)\FlatRedBall\FRBDK\Xna 4 Tools\FlatRedBall.dll</HintPath>
@@ -125,6 +128,9 @@
       <Project>{33062e96-e18b-420c-bef4-8f8c0fb09ee9}</Project>
       <Name>AnimChainsSheetPacker</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="icon.ico" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
