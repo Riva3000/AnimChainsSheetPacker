@@ -113,8 +113,7 @@ namespace AnimChainsSheetPacker
         }
         #endregion -- Paths END
 
-        // debug
-        private const string _SpriteSheetPackerExeFilePath = @"E:\Program Files (x86)\amakaseev SpriteSheet Packer\";
+
 
 
 
@@ -122,8 +121,6 @@ namespace AnimChainsSheetPacker
 
         public MainWindow()
         {
-            ContentRendered += _This_ContentRendered;
-
             DataContext = this;
 
             InitializeComponent();
@@ -134,121 +131,6 @@ namespace AnimChainsSheetPacker
 
 
 
-
-
-        private void _This_ContentRendered(object sender, EventArgs e)
-        {
-            //var animChainListSave = Main.LoadOriginalAchx( @"W:\Programing\VisualStudio2015 Projects\AnimChainsSheetPacker\TestData\Main.achx" );
-            //Debug.WriteLine(" * animChainListSave: " + (animChainListSave != null ? "loaded Count: " + animChainListSave.AnimationChains.Count : "null"));
-
-            //_RunTexturePackerImport();
-
-            //Testing.SerializeJson();
-
-            //var packedFramesData = Main.LoadPackerJson( @"W:\Programing\VisualStudio2015 Projects\TexturePackerImport\TestData\sspResult.json" );
-            //MessageBox.Show(Cmn.PrintList(packedFramesData.Take(2)));
-            // works !
-            //MessageBox.Show(Path.GetFileName( packedFramesData.Keys.First() ));
-
-            // float rounding error !
-            //float f = 20.345f;
-            //Debug.WriteLine((f - (int)f).ToString());
-            //Debug.WriteLine((f - (int)f)); // not 0.345 but 0.3449993
-            //Debug.WriteLine((f - Math.Floor(f))); // returns double: 0,344999313354492 :)
-            //Debug.WriteLine((f - (float)Math.Floor(f))); // 0,3449993 :)
-            /*// works
-            decimal decimalF = (decimal)f;
-            Debug.WriteLine((decimalF - (int)(decimalF))); */
-
-
-            //_AddMsg("Bla blaba aaaaaaaa", Brushes.Magenta);
-            //_AddMsg("Bla blaba aaaaaaaa", Brushes.Blue);
-
-            //Cmn.Msg("Done");
-            //MessageBox.Show("Done");
-        }
-
-        private void _RunPacking()
-        {
-            string mainWorkDir = @"W:\Programing\VisualStudio2015 Projects\AnimChainsSheetPacker\TestData\";
-            string spriteImagesExportDir = @"W:\Programing\VisualStudio2015 Projects\AnimChainsSheetPacker\TestData\Sprites\";
-            string inputAchxFilePath = Path.Combine(mainWorkDir, "Main.achx");
-
-            var animChainListSave =
-                //Main.LoadOriginalAchx( inputAchxFilePath );
-                //AnimationChainListSave.FromFile( inputAchxFilePath );
-                Packer.LoadtAchx(inputAchxFilePath);
-            //Debug.WriteLine(" * animChainList: " + (animChainList != null ? "loaded Count: " + animChainList.AnimationChains.Count : "null"));
-
-            string originalSpriteSheetDir;
-            string originalSpriteSheetFileName;
-            Bitmap originalSpriteSheetBmp = Packer.LoadOriginalSpriteSheets(
-                animChainListSave,
-                mainWorkDir, // achx dir
-                out originalSpriteSheetDir,
-                out originalSpriteSheetFileName
-            );
-            // debug
-            Debug.WriteLine(
-                " * originalSpriteSheetBmp: " + (originalSpriteSheetBmp != null ? "loaded size: " + originalSpriteSheetBmp.Width + ", " + originalSpriteSheetBmp.Height : "null")
-                +
-                "\n   originalSpriteSheetDir: " + originalSpriteSheetDir
-                +
-                "\n   originalSpriteSheetFileName: " + originalSpriteSheetFileName
-            );
-
-            var conversionData = Packer.ChopSpriteSheetToSpriteImages(
-                animChainListSave,
-                originalSpriteSheetBmp,
-                spriteImagesExportDir
-            );
-
-            /*Debug.Write(
-                Cmn.PrintList(
-                    conversionData,
-                    (anim) =>
-                    {
-                        return "Anim:\n" + Cmn.PrintList(
-                            anim, 
-                            (item) =>
-                            {
-                                return item == null ? "null" : item.ToString();
-                            }
-                            , null, "\t"
-                        );
-                    }
-                )
-            );*/
-
-            //Main.RunPackerGui(_SpriteSheetPackerExeFilePath);
-            Packer.RunPackerCommandline(
-                _SpriteSheetPackerExeFilePath, 
-                spriteImagesExportDir, mainWorkDir,
-                //originalSpriteSheetDir, originalSpriteSheetFileName,
-                //@"W:\Programing\VisualStudio2015 Projects\AnimChainsSheetPacker\TestData\", "CaptainSpriteSheet.png",
-                2, 2, true
-            );
-
-            var packedFramesData = Packer.LoadPackerJson( 
-                Path.Combine(mainWorkDir, "Sprites.json")
-            );
-
-            System.Drawing.Size resultSheetSize = Packer.GetResultSheetSize(mainWorkDir);
-
-            Packer.UpdateAnimChains(
-                animChainListSave,
-                conversionData,
-                packedFramesData,
-                resultSheetSize,
-                new Vector2(_FramesRelativeX, _FramesRelativeY)
-            );
-
-            Packer.SaveAchx(
-                animChainListSave, 
-                Path.Combine(mainWorkDir, "Result.achx"),
-                inputAchxFilePath
-            );/**/
-        }
 
 
 
@@ -336,7 +218,7 @@ namespace AnimChainsSheetPacker
             string path;
             if (_ShowOpenFileDialog("Select SpriteSheet Packer directory", "Executable (*.exe)|*.exe", out path))
             {
-                SSPDir = path;
+                SSPDir = Path.GetDirectoryName(path);
             }
         }
 

@@ -198,12 +198,12 @@
 
             <!--sheetBorder = 0, uint spritesBorders = 0, bool sheetPowerOf2 = false, uint maxSheetSize = 8192, bool forceSquareSheet-->
             <TextBlock Grid.Column="0" Grid.Row="0" Text="X" HorizontalAlignment="Right" Margin="0,0,10,0" />
-            <xctk:IntegerUpDown Grid.Column="1" Grid.Row="0" MaxWidth="125"
-                                Minimum="0" Value="{Binding SheetBorder}" />
+            <xctk:DecimalUpDown Grid.Column="1" Grid.Row="0" MaxWidth="125"
+                                Value="{Binding FramesRelativeX}" />
 
             <TextBlock Grid.Column="3" Grid.Row="0" Text="Y" HorizontalAlignment="Right" Margin="0,0,10,0" />
-            <xctk:IntegerUpDown Grid.Column="4" Grid.Row="0" MaxWidth="125" 
-                                Minimum="0" Value="{Binding SpritesBorders}" />
+            <xctk:DecimalUpDown Grid.Column="4" Grid.Row="0" MaxWidth="125" 
+                                Value="{Binding FramesRelativeY}" />
         </Grid>
 
 
