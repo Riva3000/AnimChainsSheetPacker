@@ -1,17 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Xml.Serialization;
-using FlatRedBall.Graphics.Animation;
+//using System.Linq;
+//using FlatRedBall.Graphics.Animation;
 using System.IO;
 //using System.Windows.Media.Imaging; // WPF bitmaps
 using System.Drawing; // WinForms bitmaps
 using System.Drawing.Imaging;
-using System.Windows.Forms;
 using FlatRedBall.Content.AnimationChain;
-using System.Web.Script.Serialization; // JavaScriptSerializer
+//using System.Web.Script.Serialization; // JavaScriptSerializer
 using Newtonsoft.Json;
 using Microsoft.Xna.Framework;
 using System.Diagnostics;
