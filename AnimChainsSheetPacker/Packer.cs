@@ -61,12 +61,16 @@ namespace AnimChainsSheetPacker
                 workDirectory = Path.Combine(Path.GetTempPath(), "AnimChainsSheetPacker_" + Guid.NewGuid().ToString());
                 temporaryWorkDir = true;
             }
-            else if (!Directory.Exists(workDirectory))
+            if (!Directory.Exists(workDirectory))
             {
                 Directory.CreateDirectory(workDirectory);
             }
 
             string spriteImagesExportDir = Path.Combine(workDirectory, @"Sprites\");
+            if (!Directory.Exists(spriteImagesExportDir))
+            {
+                Directory.CreateDirectory(spriteImagesExportDir);
+            }
 
             bool overwriteInputFiles = outputDirectory == null;
 
