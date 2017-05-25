@@ -114,24 +114,7 @@ namespace AnimChainsSheetPacker
 
             Size resultSheetSize;
             if (resultSheetTransparentColor.HasValue)
-            {
-                string resultSheetFilePath = Path.Combine(workDirectory, "Sprites.png");
-
-                // v1: throsw GDI+ exception
-                //Bitmap resultBmp = new Bitmap( resultSheetFilePath );
-                // v2:
-                string tempImageFilePath;
-                Bitmap resultBmp = LoadResultSheetNoLock(resultSheetFilePath, out tempImageFilePath);
-
-                resultSheetSize = resultBmp.Size;
-
-                ChangeResultSheetTransparentColor(resultBmp, resultSheetTransparentColor.Value);
-
-                resultBmp.Save(resultSheetFilePath, ImageFormat.Png);
-                resultBmp.Dispose();
-
-                File.Delete(tempImageFilePath);
-            }
+                resultSheetSize = ChangeResultSheetTransparentColor(workDirectory, resultSheetTransparentColor.Value);
             else
                 resultSheetSize = GetResultSheetSize(workDirectory);
 
@@ -147,25 +130,8 @@ namespace AnimChainsSheetPacker
             {
                 // Save achx to original achx path
                 SaveAchx(animChainsListSave, inputAchxFilePath, inputAchxFilePath);
-
-                string originalSpriteSheetFilePath = Path.Combine(originalSpriteSheetDir, originalSpriteSheetFileName);
-
-                // Delete original sheet file
-                //File.Delete(originalSpriteSheetFilePath);
-
-                // Backup original sheet file
-                File.Move(
-                    originalSpriteSheetFilePath,
-                    Path.Combine(originalSpriteSheetDir, Path.GetFileNameWithoutExtension(originalSpriteSheetFileName) + "_backup" + Path.GetExtension(originalSpriteSheetFileName))
-                );
-
-                // Move result sheet file to original sheet file dir with original sheet file name
-                File.Move(
-                    Path.Combine(workDirectory, "Sprites.png"),
-                    Path.Combine(originalSpriteSheetDir, Path.GetFileNameWithoutExtension(originalSpriteSheetFileName) + ".png")
-                );
             }
-            else // !overwriteInputFiles means outputDirectory != null
+            else // not overwriteInputFiles - means outputDirectory != null
             {
                 SaveAchx(
                     animChainsListSave,
@@ -173,25 +139,14 @@ namespace AnimChainsSheetPacker
                     // Path.Combine(outputDirectory, Path.GetFileName(inputAchxFilePath))
                     inputAchxFilePath
                 );
-
-                string resultSheetFilePath = Path.Combine(outputDirectory, Path.GetFileNameWithoutExtension(originalSpriteSheetFileName) + ".png");
-
-                // Move result sheet file to output dir with original sheet file name
-                if (File.Exists(resultSheetFilePath))
-                {
-                    // Backup exiting sheet file
-                    File.Move(
-                        resultSheetFilePath,
-                        Path.Combine(outputDirectory, Path.GetFileNameWithoutExtension(originalSpriteSheetFileName) + "_backup.png")
-                    );
-                }
-
-                File.Move(
-                    Path.Combine(workDirectory, "Sprites.png"),
-                    resultSheetFilePath
-                );
             }
 
+            PlaceResultSpriteSheetFile(
+                overwriteInputFiles, 
+                originalSpriteSheetDir, originalSpriteSheetFileName, 
+                workDirectory, 
+                outputDirectory
+            );
 
 
             // -- Cleanup
@@ -854,10 +809,26 @@ namespace AnimChainsSheetPacker
 
 
         // - Fix transparent color
-        public static void ChangeResultSheetTransparentColor(string workDir, Color color)
+        public static Size ChangeResultSheetTransparentColor(string workDir, Color color)
         {
-            var bitmap = new Bitmap(Path.Combine(workDir, "Sprites.png"));
-            ChangeResultSheetTransparentColor(bitmap, color);
+            string resultSheetFilePath = Path.Combine(workDir, "Sprites.png");
+
+            // v1: throsw GDI+ exception
+            //Bitmap resultBmp = new Bitmap( resultSheetFilePath );
+            // v2:
+            string tempImageFilePath;
+            Bitmap resultBmp = LoadResultSheetNoLock(resultSheetFilePath, out tempImageFilePath);
+
+            Size resultSheetSize = resultBmp.Size;
+
+            ChangeResultSheetTransparentColor(resultBmp, color);
+
+            resultBmp.Save(resultSheetFilePath, ImageFormat.Png);
+            resultBmp.Dispose();
+
+            File.Delete(tempImageFilePath);
+
+            return resultSheetSize;
         }
         public static void ChangeResultSheetTransparentColor(Bitmap resultBitmap, Color color)
         {
@@ -1187,6 +1158,50 @@ namespace AnimChainsSheetPacker
             //animChainListData.CoordinateType = FlatRedBall.Graphics.TextureCoordinateType.?
 
             animChainListSave.Save(outputAchxFilePath);
+        }
+
+        public static void PlaceResultSpriteSheetFile(bool overwriteInputFile, 
+                                                      string originalSpriteSheetDir, string originalSpriteSheetFileName, 
+                                                      string workDirectory, string outputDirectory)
+        {
+            if (overwriteInputFile)
+            {
+                string originalSpriteSheetFilePath = Path.Combine(originalSpriteSheetDir, originalSpriteSheetFileName);
+
+                // Delete original sheet file
+                //File.Delete(originalSpriteSheetFilePath);
+
+                // Backup original sheet file
+                File.Move(
+                    originalSpriteSheetFilePath,
+                    Path.Combine(originalSpriteSheetDir, Path.GetFileNameWithoutExtension(originalSpriteSheetFileName) + "_backup" + Path.GetExtension(originalSpriteSheetFileName))
+                );
+
+                // Move result sheet file to original sheet file dir with original sheet file name
+                File.Move(
+                    Path.Combine(workDirectory, "Sprites.png"),
+                    Path.Combine(originalSpriteSheetDir, Path.GetFileNameWithoutExtension(originalSpriteSheetFileName) + ".png")
+                );
+            }
+            else // not overwriteInputFiles - means outputDirectory != null
+            {
+                string resultSheetFilePath = Path.Combine(outputDirectory, Path.GetFileNameWithoutExtension(originalSpriteSheetFileName) + ".png");
+
+                // Move result sheet file to output dir with original sheet file name
+                if (File.Exists(resultSheetFilePath))
+                {
+                    // Backup exiting sheet file
+                    File.Move(
+                        resultSheetFilePath,
+                        Path.Combine(outputDirectory, Path.GetFileNameWithoutExtension(originalSpriteSheetFileName) + "_backup.png")
+                    );
+                }
+
+                File.Move(
+                    Path.Combine(workDirectory, "Sprites.png"),
+                    resultSheetFilePath
+                );
+            }
         }
     }
 }
