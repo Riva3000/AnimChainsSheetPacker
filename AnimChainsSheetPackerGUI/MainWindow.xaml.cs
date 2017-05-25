@@ -10,13 +10,17 @@ using FlatRedBall.Content.AnimationChain;
 using System.Drawing;
 using System.ComponentModel;
 using Microsoft.Win32;
-using Microsoft.Xna.Framework;
+//using Microsoft.Xna.Framework;
 
 using Brush = System.Windows.Media.Brush;
 using Brushes = System.Windows.Media.Brushes;
+using Size = System.Drawing.Size;
+
+using AnimChainsSheetPacker.DataTypes;
 
 // debug
 using System.Diagnostics;
+
 
 namespace AnimChainsSheetPacker
 {
@@ -213,6 +217,223 @@ namespace AnimChainsSheetPacker
             //FDSVMessages.Scroll
         }
 
+        private void _RunPacking()
+        {
+            Color? resultSheetTransparentColor = null;
+            string workDirectory;
+
+            // ------------------ Packer code
+            // -- Preparation
+            bool temporaryWorkDir = false;
+            if (_WorkDir == null)
+            {
+                workDirectory = Path.Combine(Path.GetTempPath(), "AnimChainsSheetPacker_" + Guid.NewGuid().ToString());
+                temporaryWorkDir = true;
+            }
+            else
+            {
+                workDirectory = _WorkDir;
+            }
+            if (!Directory.Exists(workDirectory))
+            {
+                Directory.CreateDirectory(workDirectory);
+            }
+
+            string spriteImagesExportDir = Path.Combine(workDirectory, @"Sprites\");
+            if (!Directory.Exists(spriteImagesExportDir))
+            {
+                Directory.CreateDirectory(spriteImagesExportDir);
+            }
+
+            // debug
+            //File.WriteAllText(Path.Combine(workDirectory, "test.txt"), "test");
+            //Process.Start(workDirectory);
+            //return;
+
+            bool overwriteInputFiles = this._OutputDir == null;
+
+
+
+            // -- Processing data
+
+
+            Debug.WriteLine("\n--------- Loading Source achx ---------\n");
+            _AddMsg(" - Loading Source achx - ");
+
+            var animChainListSave = Packer.LoadtAchx(_SourceAchx);
+            //Debug.WriteLine(" * animChainList: " + (animChainList != null ? "loaded Count: " + animChainList.AnimationChains.Count : "null"));
+
+
+
+
+
+
+
+            Debug.WriteLine("\n--------- Loading Original SpriteSheet ---------\n");
+            _AddMsg(" - Loading original SpriteSheet - ");
+
+            string originalSpriteSheetDir;
+            string originalSpriteSheetFileName;
+            Bitmap originalSpriteSheetBmp = Packer.LoadOriginalSpriteSheets(
+                animChainListSave,
+                Path.GetDirectoryName(_SourceAchx), // achx dir   NOT path file name
+                out originalSpriteSheetDir,
+                out originalSpriteSheetFileName
+            );
+            // debug
+            Debug.WriteLine(
+                " * originalSpriteSheetBmp: " + (originalSpriteSheetBmp != null ? "loaded size: " + originalSpriteSheetBmp.Width + ", " + originalSpriteSheetBmp.Height : "null")
+                +
+                "\n   originalSpriteSheetDir: " + originalSpriteSheetDir
+                +
+                "\n   originalSpriteSheetFileName: " + originalSpriteSheetFileName
+            );
+
+
+
+
+
+            Debug.WriteLine("\n--------- Chopping Original SpriteSheet ---------\n");
+            _AddMsg(" - Chopping original SpriteSheet - ");
+
+            var pixelAnims = Packer.ChopSpriteSheetToSpriteImages(
+                animChainListSave,
+                originalSpriteSheetBmp,
+                spriteImagesExportDir
+            );
+
+            originalSpriteSheetBmp.Dispose();
+
+            /*Debug.WriteLine(
+                Cmn.PrintList(
+                    conversionData,
+                    (anim) =>
+                    {
+                        return "Anim:\n" + Cmn.PrintList(
+                            anim, 
+                            (item) =>
+                            {
+                                return item == null ? "null" : item.ToString();
+                            }
+                            , null, "\t"
+                        );
+                    }
+                )
+            );*/
+
+
+
+
+
+            Debug.WriteLine("\n--------- Runing Packer commandline ---------\n");
+            _AddMsg(" - Runing SpriteSheet Packer commandline - ");
+
+            //Main.RunPackerGui(_SpriteSheetPackerExeFilePath);
+            Packer.RunPackerCommandline(
+                _SSPDir, 
+
+                spriteImagesExportDir, 
+
+                workDirectory,
+
+                2, 2, true
+            );
+
+
+
+
+
+            Debug.WriteLine("\n--------- Loading Packer Json ---------\n");
+            _AddMsg(" - Loading result SpriteSheet Packer data (Json) - ");
+
+            Dictionary<string, SSPFrame> packedFramesData = Packer.LoadPackerJson( 
+                Path.Combine(workDirectory, "Sprites.json")
+            );
+
+            /*// debug
+            var packedFramesDataSorted = packedFramesData.ToArray();
+            Array.Sort(
+                packedFramesDataSorted, 
+                (kvA, kvB) => { return string.Compare(kvA.Key, kvB.Key); }
+            );
+            Debug.WriteLine(
+                Cmn.PrintList( packedFramesDataSorted, null, "\t" )
+            );*/
+
+
+
+
+            Debug.WriteLine("\n--------- Geting Result SpriteSheet size ---------\n");
+            _AddMsg(" - Loading result SpriteSheet - ");
+
+            Size resultSheetSize;
+            if (resultSheetTransparentColor.HasValue)
+            {
+                _AddMsg("Updating result SpriteSheet");
+                resultSheetSize = Packer.ChangeResultSheetTransparentColor(workDirectory, resultSheetTransparentColor.Value);
+            }
+            else
+                resultSheetSize = Packer.GetResultSheetSize(workDirectory);
+
+            Debug.WriteLine("ResultSheetSize: " + resultSheetSize);
+
+
+
+
+            Debug.WriteLine("\n--------- Updating Original AnimChains ---------\n");
+            _AddMsg(" - Updating AnimChains - ");
+
+            Packer.UpdateAnimChains(
+                animChainListSave,
+                pixelAnims,
+                packedFramesData,
+                resultSheetSize
+                //, offsetForAllFrames
+            );
+
+
+
+
+
+            Debug.WriteLine("\n--------- Renaming (and moving) Result SpriteSheet file ---------\n");
+            _AddMsg("Moving result SpriteSheet to output directory");
+            Packer.PlaceResultSpriteSheetFile(
+                overwriteInputFiles, 
+                originalSpriteSheetDir, originalSpriteSheetFileName, 
+                workDirectory, 
+                _OutputDir
+            );
+
+            Debug.WriteLine("\n--------- Saving Result achx ---------\n");
+            _AddMsg(" - Saving result achx - ");
+            if (overwriteInputFiles)
+            {
+                // Save achx to original achx path
+                Packer.SaveAchx(animChainListSave, _SourceAchx, _SourceAchx);
+            }
+            else // not overwriteInputFiles - means outputDirectory != null
+            {
+                Packer.SaveAchx(
+                    animChainListSave,
+                    Path.Combine(_OutputDir, "Packed.achx"),
+                    // Path.Combine(outputDirectory, Path.GetFileName(inputAchxFilePath))
+                    _SourceAchx
+                );
+            }
+
+            _AddMsg(" -- Packing successfuly finished -- ", Brushes.YellowGreen);
+
+
+            Debug.WriteLine("\n--------- Cleanup temp dir ---------\n");
+            if (temporaryWorkDir)
+            {
+                _AddMsg(" - Cleaning temp work dir - ");
+                Directory.Delete(workDirectory, true);
+            }
+            _AddMsg(" - All done - ");
+        }
+
+
         private void SpriteSheetPackerLink_Click(object sender, RoutedEventArgs e)
         {
             Process.Start("https://github.com/amakaseev/sprite-sheet-packer");
@@ -316,7 +537,51 @@ namespace AnimChainsSheetPacker
         {
             try
             {
-                Packer.PackAchx(
+                // ------------------ inputs error checking
+
+                if (String.IsNullOrWhiteSpace(_SourceAchx))
+                {
+                    _AddMsg("Select input .achx file.", Brushes.Yellow);
+                    return;
+                }
+                else if (!File.Exists(_SourceAchx))
+                {
+                    _AddMsg("Can not find input .achx file.", Brushes.Yellow);
+                    return;
+                }
+
+                if (String.IsNullOrWhiteSpace(_SSPDir))
+                {
+                    _AddMsg("Select SpriteSheet Packer directory.", Brushes.Yellow);
+                    return;
+                }
+                else if (!File.Exists(Path.Combine(_SSPDir, Packer.SPRITESHEETPACKER_EXE)))
+                {
+                    _AddMsg("Can not find SpriteSheet Packer in select directory.", Brushes.Yellow);
+                    return;
+                }
+
+                //
+                if (_OutputDir == null)
+                {
+                    var userChoice = MessageBox.Show("Really overwrite input .achx and it's sprite sheet image with resulting packed versions ?\n\nIf you do not want to overwrite source files, choose output directory (that is different than that of source .achx file).", "Overwrite", MessageBoxButton.YesNo);
+                    if (userChoice != MessageBoxResult.Yes)
+                        return;
+                }
+                else if (String.IsNullOrWhiteSpace(_OutputDir))
+                {
+                    _AddMsg("Wrong output directory path selected.", Brushes.Yellow);
+                    return;
+                }
+
+                if (_WorkDir != null && String.IsNullOrWhiteSpace(_WorkDir))
+                {
+                    _AddMsg("Wrong work directory path selected.", Brushes.Yellow);
+                    return;
+                }
+
+
+                /*Packer.PackAchx(
                     // input .achx file path name ext 
                     _SourceAchx,
                     // SpriteSheet Packer dir
@@ -328,7 +593,9 @@ namespace AnimChainsSheetPacker
                     _WorkDir,
 
                     (uint)_SheetBorder, (uint)_SpritesBorders, _SheetPowerOf2, (uint)_MaxSheetSize, _ForceSquareSheet
-                );
+                );*/
+
+                _RunPacking();
             }
             catch (Exception ex)
             {
@@ -369,7 +636,7 @@ namespace AnimChainsSheetPacker
                 if (ex is IOException)
                 {
                     var ioEx = ex as IOException;
-                    _AddMsg("Uknown file system error.", Brushes.Red);
+                    _AddMsg("File system error:" + ex.Message, Brushes.Red);
                     return;
                 }
 

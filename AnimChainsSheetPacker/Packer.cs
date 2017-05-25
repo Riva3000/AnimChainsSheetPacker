@@ -25,6 +25,9 @@ namespace AnimChainsSheetPacker
     /// <summary>Main and only class of AnimChainsSheetPacker lib.</summary>
     public sealed class Packer
     {
+        public const string SPRITESHEETPACKER_EXE = "SpriteSheetPacker.exe";
+
+
         /// <summary>Takes .achx file, packs together sprites in .achx' sprite sheet and updates .achx file so all it's animations work the same as in original.</summary>
         /// <param name="inputAchxFilePath">Path w file name w ext.</param>
         /// <param name="spriteSheetPackerDir">Path to SpriteSheet Packer install dir (where the exe is).</param>
@@ -715,7 +718,7 @@ namespace AnimChainsSheetPacker
             var process = new Process {
                 StartInfo = new ProcessStartInfo
                 {
-                    FileName = Path.Combine(packerExeDir, "SpriteSheetPacker.exe"),
+                    FileName = Path.Combine(packerExeDir, SPRITESHEETPACKER_EXE),
                     Arguments = args,
                     RedirectStandardOutput = true,
                     RedirectStandardError = true,
