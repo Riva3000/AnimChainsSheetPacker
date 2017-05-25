@@ -76,6 +76,9 @@ namespace AnimChainsSheetPacker
             //AnimationChainListSave animChainsListSave = AnimationChainListSave.FromFile( inputAchxFilePath );
             AnimationChainListSave animChainsListSave = LoadtAchx(inputAchxFilePath);
 
+
+
+
             string originalSpriteSheetDir;
             string originalSpriteSheetFileName;
             Bitmap originalSpriteSheetBmp = LoadOriginalSpriteSheets(
@@ -93,6 +96,9 @@ namespace AnimChainsSheetPacker
 
             originalSpriteSheetBmp.Dispose();
 
+
+
+
             /* More options than plain commandline args, but crashes SpriteSheetPacker thanks to some bug in it (reported).
             Main.RunPackerCommandline(
                 spriteSheetPackerExeFilePath, 
@@ -107,10 +113,14 @@ namespace AnimChainsSheetPacker
                 sheetBorder, spritesBorders, sheetPowerOf2, maxSheetSize, forceSquareSheet
             );
 
+
+
             Dictionary<string, SSPFrame> packedFramesData = LoadPackerJson( 
                     //Path.Combine(workDirectory, "Result", Path.GetFileNameWithoutExtension(originalSpriteSheetFileName) + ".json" )
                     Path.Combine(workDirectory, "Sprites.json" )
                 );
+
+
 
             Size resultSheetSize;
             if (resultSheetTransparentColor.HasValue)
@@ -118,12 +128,24 @@ namespace AnimChainsSheetPacker
             else
                 resultSheetSize = GetResultSheetSize(workDirectory);
 
+
+
             UpdateAnimChains(
                 animChainsListSave,
                 pixelAnims,
                 packedFramesData,
                 resultSheetSize,
                 offsetForAllFrames
+            );
+
+            
+
+
+            PlaceResultSpriteSheetFile(
+                overwriteInputFiles, 
+                originalSpriteSheetDir, originalSpriteSheetFileName, 
+                workDirectory, 
+                outputDirectory
             );
 
             if (overwriteInputFiles)
@@ -141,12 +163,7 @@ namespace AnimChainsSheetPacker
                 );
             }
 
-            PlaceResultSpriteSheetFile(
-                overwriteInputFiles, 
-                originalSpriteSheetDir, originalSpriteSheetFileName, 
-                workDirectory, 
-                outputDirectory
-            );
+            
 
 
             // -- Cleanup
