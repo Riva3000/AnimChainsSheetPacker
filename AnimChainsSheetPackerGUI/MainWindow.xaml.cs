@@ -43,7 +43,7 @@ namespace AnimChainsSheetPacker
             set { SetField(ref _SpritesBorders, value, "SpritesBorders"); }
         }
 
-        private int _MaxSheetSize = 8000;
+        private int _MaxSheetSize = 2048;
         public int MaxSheetSize
         {
             get { return _MaxSheetSize; }
@@ -83,28 +83,28 @@ namespace AnimChainsSheetPacker
         #endregion -- Output achx params END
 
         #region    -- Paths
-        private string _OutputDir = @"W:\Programing\VisualStudio2015 Projects\TexturePackerFRBImport_misc\TestData\";
+        private string _OutputDir;
         public string OutputDir
         {
             get { return _OutputDir; }
             set { SetField(ref _OutputDir, value, "OutputDir"); }
         }
 
-        private string _SSPDir = @"E:\Program Files (x86)\amakaseev SpriteSheet Packer\";
+        private string _SSPDir;
         public string SSPDir
         {
             get { return _SSPDir; }
             set { SetField(ref _SSPDir, value, "SSPDir"); }
         }
 
-        private string _SourceAchx = @"W:\Programing\VisualStudio2015 Projects\TexturePackerFRBImport_misc\TestData\Input\MinimalTest01.achx";
+        private string _SourceAchx;
         public string SourceAchx
         {
             get { return _SourceAchx; }
             set { SetField(ref _SourceAchx, value, "SourceAchx"); }
         }
 
-        private string _WorkDir = @"W:\Programing\VisualStudio2015 Projects\TexturePackerFRBImport_misc\TestData\";
+        private string _WorkDir;
         public string WorkDir
         {
             get { return _WorkDir; }
