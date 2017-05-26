@@ -11,16 +11,17 @@ using System.Drawing;
 using System.ComponentModel;
 using Microsoft.Win32;
 //using Microsoft.Xna.Framework;
+using System.Windows.Media;
 
 using Brush = System.Windows.Media.Brush;
 using Brushes = System.Windows.Media.Brushes;
 using Size = System.Drawing.Size;
+using Color = System.Drawing.Color;
 
 using AnimChainsSheetPacker.DataTypes;
 
 // debug
 using System.Diagnostics;
-
 
 namespace AnimChainsSheetPacker
 {
@@ -62,6 +63,14 @@ namespace AnimChainsSheetPacker
         {
             get { return _ForceSquareSheet; }
             set { SetField(ref _ForceSquareSheet, value, "ForceSquareSheet"); }
+        }
+
+
+        private Color? _SheetBGColor = null;
+        public Color? SheetBGColor
+        {
+            get { return _SheetBGColor; }
+            set { SetField(ref _SheetBGColor, value, "SheetBGColor"); }
         }
         #endregion -- SpriteSheet params END
 
@@ -112,8 +121,8 @@ namespace AnimChainsSheetPacker
         }
         #endregion -- Paths END
 
-
-
+        private readonly Color[] _PredefinedColors;
+        public Color[] PredefinedColors { get { return _PredefinedColors; } }
 
 
 
@@ -126,6 +135,8 @@ namespace AnimChainsSheetPacker
 
             //VisualTreeHelper.
             //FDSVMessages
+
+            //MessageBox.Show(_PredefinedColors[0].Name);
         }
 
 
@@ -433,6 +444,27 @@ namespace AnimChainsSheetPacker
             _AddMsg(" - All done - ");
         }
 
+        private Color[] _GetKnownColors()
+        {
+            //List<Color> allColors = new List<Color>();
+
+            var colorPropInfos = typeof(Color).GetProperties();
+
+            Color[] knownColors = new Color[colorPropInfos.Length];
+
+            //foreach (System.Reflection.PropertyInfo property in colorPropInfos.Skip(1))
+            System.Reflection.PropertyInfo property;
+            for (int i = 0; i < colorPropInfos.Length; i++)
+            {
+                property = colorPropInfos[i];
+                if (property.PropertyType == typeof(Color))
+                {
+                    knownColors[i] = (Color)property.GetValue(null);
+                }
+            }
+
+            return knownColors;
+        }
 
         private void SpriteSheetPackerLink_Click(object sender, RoutedEventArgs e)
         {

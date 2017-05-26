@@ -22,15 +22,17 @@
             <RowDefinition Height="Auto" />
             <!-- 3 Sheet packing options grid -->
             <RowDefinition Height="Auto" />
-            <!-- 4 achx options grid - header -->
-            <RowDefinition Height="Auto" />
-            <!-- 5 achx options grid - header 2 -->
+            <!-- 4 Sheet color options -->
             <RowDefinition Height="Auto"/>
-            <!-- 6 achx options grid -->
+            <!-- 5 achx options grid - header -->
             <RowDefinition Height="Auto" />
-            <!-- 7 Start button -->
+            <!-- 6 achx options grid - header 2 -->
+            <RowDefinition Height="Auto"/>
+            <!-- 7 achx options grid -->
             <RowDefinition Height="Auto" />
-            <!-- 8 Log -->
+            <!-- 8 Start button -->
+            <RowDefinition Height="Auto" />
+            <!-- 9 Log -->
             <RowDefinition />
         </Grid.RowDefinitions>
 
@@ -101,7 +103,7 @@
 
 
         <!-- Sheet packing options grid -->
-        <Rectangle Grid.Row="2" Grid.RowSpan="2" Fill="{StaticResource BGBlueish}" />
+        <Rectangle Grid.Row="2" Grid.RowSpan="3" Fill="{StaticResource BGBlueish}" />
         <TextBlock Grid.Row="2" Text="Result packed sprite sheet options" DockPanel.Dock="Top" HorizontalAlignment="Center" Margin="10,6,10,0" />
         <Grid Grid.Row="3" Margin="10,20,10,10" DockPanel.Dock="Top" MaxWidth="600" >
             <Grid.RowDefinitions>
@@ -140,7 +142,7 @@
                         <Setter Property="Content" Value="{Binding RelativeSource={RelativeSource Self}, Path=Tag, Mode=OneTime}" />
                     </Style>
                 </StackPanel.Resources>
-                
+
                 <Button Click="ButSheetMaxSize_Click" >
                     <Button.Tag>
                         <sys:Int32>128</sys:Int32>
@@ -172,7 +174,7 @@
                     </Button.Tag>
                 </Button>
             </StackPanel>
-            
+
             <CheckBox Grid.Row="4" Grid.ColumnSpan="2" Content="Sheet size power of 2" HorizontalAlignment="Center" 
                       IsChecked="{Binding SheetPowerOf2}" />
             <CheckBox Grid.Row="4" Grid.Column="3" Grid.ColumnSpan="2" Content="Sheet square" HorizontalAlignment="Center" 
@@ -180,14 +182,39 @@
 
         </Grid>
 
+        <Grid Grid.Row="4" Margin="10,10,10,10" >
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="10" />
+                <ColumnDefinition Width="3*" />
+                <ColumnDefinition Width="10" />
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"  />
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"  />
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"  />
+            </Grid.ColumnDefinitions>
+
+            <TextBlock Grid.Column="0" Text="Sheet transparent BG color" HorizontalAlignment="Right" VerticalAlignment="Center" />
+            <ComboBox Grid.Column="2" ItemsSource="{Binding PredefinedColors, Mode=OneTime}" />
+            
+            <TextBlock Grid.Column="4" Text="R" VerticalAlignment="Center" Margin="4,2" />
+            <xctk:ByteUpDown Grid.Column="5" ShowButtonSpinner="False" />
+            <TextBlock Grid.Column="6" Text="G" VerticalAlignment="Center" Margin="4,2" />
+            <xctk:ByteUpDown Grid.Column="7" ShowButtonSpinner="False" />
+            <TextBlock Grid.Column="8" Text="B" VerticalAlignment="Center" Margin="4,2" />
+            <xctk:ByteUpDown Grid.Column="9" ShowButtonSpinner="False" />
+        </Grid>
+
 
 
 
         <!-- achx options grid -->
-        <Rectangle Grid.Row="4" Grid.RowSpan="3" Fill="{DynamicResource BGRedish}" />
-        <TextBlock Grid.Row="4" Text="Result achx options" DockPanel.Dock="Top" HorizontalAlignment="Center" Margin="10,6,10,0" />
-        <TextBlock Grid.Row="5" Text="Add Relative position to all Frames" DockPanel.Dock="Top" HorizontalAlignment="Center" Margin="10,6,10,0" />
-        <Grid Grid.Row="6" Margin="10,6,10,10" DockPanel.Dock="Top" MaxWidth="600" >
+        <Rectangle Grid.Row="5" Grid.RowSpan="3" Fill="{DynamicResource BGRedish}" />
+        <TextBlock Grid.Row="5" Text="Result achx options" DockPanel.Dock="Top" HorizontalAlignment="Center" Margin="10,6,10,0" />
+        <TextBlock Grid.Row="6" Text="Add Relative position to all Frames" DockPanel.Dock="Top" HorizontalAlignment="Center" Margin="10,6,10,0" />
+        <Grid Grid.Row="7" Margin="10,6,10,10" DockPanel.Dock="Top" MaxWidth="600" >
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto" SharedSizeGroup="g1" />
                 <ColumnDefinition />
@@ -210,14 +237,14 @@
 
 
         <!-- Start button -->
-        <StackPanel Grid.Row="7" Margin="10,20,10,20" MaxWidth="600" >
+        <StackPanel Grid.Row="8" Margin="10,20,10,20" MaxWidth="600" >
             <Button Name="ButStart" Content="Pack" HorizontalAlignment="Center" Padding="20,6" FontWeight="Bold" FontSize="14"
                 Click="ButStart_Click" />
         </StackPanel>
 
 
         <!-- Log -->
-        <FlowDocumentScrollViewer Name="FDSVMessages" Grid.Row="8" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+        <FlowDocumentScrollViewer Name="FDSVMessages" Grid.Row="9" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
 
             <!--moved to Style-->
             <!--<FlowDocument Name="FDMessagesStack" 
