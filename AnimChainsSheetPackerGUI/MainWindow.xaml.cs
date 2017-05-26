@@ -452,9 +452,10 @@ namespace AnimChainsSheetPacker
 
             Color[] knownColors = new Color[colorPropInfos.Length];
 
+            // skip first = Transparent
             //foreach (System.Reflection.PropertyInfo property in colorPropInfos.Skip(1))
             System.Reflection.PropertyInfo property;
-            for (int i = 0; i < colorPropInfos.Length; i++)
+            for (int i = 1; i < colorPropInfos.Length; i++)
             {
                 property = colorPropInfos[i];
                 if (property.PropertyType == typeof(Color))
@@ -462,6 +463,14 @@ namespace AnimChainsSheetPacker
                     knownColors[i] = (Color)property.GetValue(null);
                 }
             }
+
+            colorPropInfos[0].
+
+            var col = new Color();
+            typeof(Color)
+               .GetField("Name", System.Reflection.BindingFlags.Instance| System.Reflection.BindingFlags.NonPublic)
+               .SetValue(col, "None");
+            knownColors[0] = col;
 
             return knownColors;
         }
