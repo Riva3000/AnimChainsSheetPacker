@@ -22,6 +22,8 @@ using AnimChainsSheetPacker.DataTypes;
 
 // debug
 using System.Diagnostics;
+using System.Text;
+
 
 namespace AnimChainsSheetPacker
 {
@@ -137,6 +139,13 @@ namespace AnimChainsSheetPacker
             //FDSVMessages
 
             //MessageBox.Show(_PredefinedColors[0].Name);
+            var sb = new StringBuilder();
+            /*var colorFieldInfos = typeof(Color).GetFields();
+            foreach (var fieldi in colorFieldInfos)
+            {
+                sb.AppendLine(fieldi.Name);
+            }*/
+            MessageBox.Show(sb.ToString());
         }
 
 
@@ -464,13 +473,13 @@ namespace AnimChainsSheetPacker
                 }
             }
 
-            colorPropInfos[0].
+            /*colorPropInfos[0].
 
             var col = new Color();
             typeof(Color)
                .GetField("Name", System.Reflection.BindingFlags.Instance| System.Reflection.BindingFlags.NonPublic)
                .SetValue(col, "None");
-            knownColors[0] = col;
+            knownColors[0] = col;*/
 
             return knownColors;
         }
