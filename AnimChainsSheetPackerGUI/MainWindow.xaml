@@ -70,12 +70,12 @@
             </Grid.RowDefinitions>
 
             <TextBlock Grid.Row="0" Text="Source .achx" Margin="0,3" FontWeight="Bold" />
-            <TextBox Grid.Row="1" Grid.ColumnSpan="2" IsReadOnly="True" MaxLines="1" IsUndoEnabled="False"
+            <TextBox Grid.Row="1" Grid.ColumnSpan="2" MaxLines="1" IsUndoEnabled="False"
                      Text="{Binding SourceAchx}" />
             <Button Grid.Column="2" Content="Browse" Grid.Row="1" Click="ButBrowseAchx_Click" />
 
             <TextBlock Grid.Row="3" Text="SpriteSheet Packer directory" Margin="0,3" FontWeight="Bold" />
-            <TextBox Grid.Row="4" Grid.ColumnSpan="2" IsReadOnly="True" MaxLines="1" IsUndoEnabled="False" 
+            <TextBox Grid.Row="4" Grid.ColumnSpan="2" MaxLines="1" IsUndoEnabled="False" 
                      Text="{Binding SSPDir}" />
             <Button Grid.Row="4" Grid.Column="2" Content="Browse" Click="ButBrowseSSPDir_Click" />
 
@@ -84,7 +84,7 @@
                 <LineBreak/>
                 (Leave empty is you want to overwrite source .achx and it's sprite sheet image)
             </TextBlock>
-            <TextBox Grid.Row="7" IsReadOnly="True" MaxLines="1" IsUndoEnabled="False"
+            <TextBox Grid.Row="7" MaxLines="1" IsUndoEnabled="False"
                      Text="{Binding OutputDir}" />
             <Button Grid.Row="7" Grid.Column="1" Content="Browse" Click="ButBrowseOutputDir_Click"  />
             <Button Grid.Row="7" Grid.Column="2" Content="Clear" Click="ButClearOutputDir_Click"  />
@@ -92,9 +92,9 @@
             <TextBlock Grid.Row="9" Grid.ColumnSpan="3" TextWrapping="Wrap" Margin="0,3" >
                 Work directory
                 <LineBreak/>
-                (Only set if you want to keep the temporary working files)
+                (Only set if you want to keep (inspect) the operation's temporary files)
             </TextBlock>
-            <TextBox Grid.Row="10" IsReadOnly="True" MaxLines="1" IsUndoEnabled="False"
+            <TextBox Grid.Row="10" MaxLines="1" IsUndoEnabled="False"
                      Text="{Binding WorkDir}" />
             <Button Grid.Row="10" Grid.Column="1" Content="Browse" Click="ButBrowseWorkDir_Click"  />
             <Button Grid.Row="10" Grid.Column="2" Content="Clear" Click="ButClearWorkDir_Click"  />
@@ -124,15 +124,15 @@
             <!--sheetBorder = 0, uint spritesBorders = 0, bool sheetPowerOf2 = false, uint maxSheetSize = 8192, bool forceSquareSheet-->
             <TextBlock Grid.Column="0" Grid.Row="0" Text="Sheet border" HorizontalAlignment="Right" Margin="0,0,10,0" />
             <xctk:IntegerUpDown Grid.Column="1" Grid.Row="0" MaxWidth="125"
-                                Minimum="0" Value="{Binding SheetBorder}" />
+                                Minimum="0" DefaultValue="0" DisplayDefaultValueOnEmptyText="True" Value="{Binding SheetBorder}" />
 
             <TextBlock Grid.Column="3" Grid.Row="0" Text="Sprites borders" HorizontalAlignment="Right" Margin="0,0,10,0" />
             <xctk:IntegerUpDown Grid.Column="4" Grid.Row="0" MaxWidth="125" 
-                                Minimum="0" Value="{Binding SpritesBorders}" />
+                                Minimum="0" DefaultValue="0" DisplayDefaultValueOnEmptyText="True" Value="{Binding SpritesBorders}" />
 
             <TextBlock Grid.Column="0" Grid.Row="2" Text="Sheet max size" HorizontalAlignment="Right" Margin="0,0,10,0" />
             <xctk:IntegerUpDown Grid.Column="1" Grid.Row="2" MaxWidth="125" 
-                                Minimum="1" Value="{Binding MaxSheetSize}" />
+                                Minimum="1" DefaultValue="2048" DisplayDefaultValueOnEmptyText="True" Value="{Binding MaxSheetSize}" />
 
             <StackPanel Grid.Column="2" Grid.ColumnSpan="3" Grid.Row="2" Orientation="Horizontal" >
                 <StackPanel.Resources>
@@ -197,14 +197,16 @@
             </Grid.ColumnDefinitions>
 
             <TextBlock Grid.Column="0" Text="Sheet transparent BG color" HorizontalAlignment="Right" VerticalAlignment="Center" />
-            <ComboBox Grid.Column="2" ItemsSource="{Binding PredefinedColors, Mode=OneTime}" />
+            <ComboBox Name="ComboBoxColor" Grid.Column="2" ItemsSource="{Binding PredefinedColors}" DisplayMemberPath="Name" SelectedIndex="0" 
+                      SelectionChanged="ComboBoxColor_SelectionChanged" />
+            <!--, Mode=OneTime-->
             
             <TextBlock Grid.Column="4" Text="R" VerticalAlignment="Center" Margin="4,2" />
-            <xctk:ByteUpDown Grid.Column="5" ShowButtonSpinner="False" />
+            <xctk:ByteUpDown Name="NumColorR" Grid.Column="5" ShowButtonSpinner="False" DefaultValue="255" Value="255" DisplayDefaultValueOnEmptyText="True" />
             <TextBlock Grid.Column="6" Text="G" VerticalAlignment="Center" Margin="4,2" />
-            <xctk:ByteUpDown Grid.Column="7" ShowButtonSpinner="False" />
+            <xctk:ByteUpDown Name="NumColorG" Grid.Column="7" ShowButtonSpinner="False" DefaultValue="0" Value="0" DisplayDefaultValueOnEmptyText="True" />
             <TextBlock Grid.Column="8" Text="B" VerticalAlignment="Center" Margin="4,2" />
-            <xctk:ByteUpDown Grid.Column="9" ShowButtonSpinner="False" />
+            <xctk:ByteUpDown Name="NumColorB" Grid.Column="9" ShowButtonSpinner="False" DefaultValue="255" Value="255" DisplayDefaultValueOnEmptyText="True" />
         </Grid>
 
 
@@ -226,11 +228,11 @@
             <!--sheetBorder = 0, uint spritesBorders = 0, bool sheetPowerOf2 = false, uint maxSheetSize = 8192, bool forceSquareSheet-->
             <TextBlock Grid.Column="0" Grid.Row="0" Text="X" HorizontalAlignment="Right" Margin="0,0,10,0" />
             <xctk:DecimalUpDown Grid.Column="1" Grid.Row="0" MaxWidth="125"
-                                Value="{Binding FramesRelativeX}" />
+                                DefaultValue="0" DisplayDefaultValueOnEmptyText="True" Value="{Binding FramesRelativeX}" />
 
             <TextBlock Grid.Column="3" Grid.Row="0" Text="Y" HorizontalAlignment="Right" Margin="0,0,10,0" />
             <xctk:DecimalUpDown Grid.Column="4" Grid.Row="0" MaxWidth="125" 
-                                Value="{Binding FramesRelativeY}" />
+                                DefaultValue="0" DisplayDefaultValueOnEmptyText="True" Value="{Binding FramesRelativeY}" />
         </Grid>
 
 

@@ -7,10 +7,10 @@ using System.Threading.Tasks;
 
 namespace AnimChainsSheetPacker
 {
-    internal class ColorData
+    public struct ColorData
     {
         public readonly Color Color;
-        public readonly string _Name;
+        private readonly string _Name;
         public string Name
         {
             get
@@ -20,6 +20,12 @@ namespace AnimChainsSheetPacker
 
                 return Color.Name;
             }
+        }
+
+        public ColorData(Color color, string name)
+        {
+            Color = color;
+            _Name = name;
         }
     }
 }
