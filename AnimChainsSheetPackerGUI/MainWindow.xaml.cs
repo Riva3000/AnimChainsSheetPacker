@@ -11,15 +11,18 @@ using System.Drawing;
 using System.ComponentModel;
 using Microsoft.Win32;
 //using Microsoft.Xna.Framework;
+using System.Windows.Media;
 
 using Brush = System.Windows.Media.Brush;
 using Brushes = System.Windows.Media.Brushes;
 using Size = System.Drawing.Size;
+using Color = System.Drawing.Color;
 
 using AnimChainsSheetPacker.DataTypes;
 
 // debug
 using System.Diagnostics;
+using System.Text;
 
 
 namespace AnimChainsSheetPacker
@@ -62,6 +65,14 @@ namespace AnimChainsSheetPacker
         {
             get { return _ForceSquareSheet; }
             set { SetField(ref _ForceSquareSheet, value, "ForceSquareSheet"); }
+        }
+
+
+        private Color? _SheetBGColor = null;
+        public Color? SheetBGColor
+        {
+            get { return _SheetBGColor; }
+            set { SetField(ref _SheetBGColor, value, "SheetBGColor"); }
         }
         #endregion -- SpriteSheet params END
 
@@ -112,7 +123,8 @@ namespace AnimChainsSheetPacker
         }
         #endregion -- Paths END
 
-
+        private readonly ColorData[] _PredefinedColors;
+        public ColorData[] PredefinedColors { get { return _PredefinedColors; } }
 
 
 
@@ -121,6 +133,9 @@ namespace AnimChainsSheetPacker
         public MainWindow()
         {
             DataContext = this;
+
+            _PredefinedColors = _BuildKnownColors();
+            //MessageBox.Show("_PredefinedColors.Length " + _PredefinedColors.Length + "  _PredefinedColors[0].Name: " + _PredefinedColors[0].Name);
 
             InitializeComponent();
 
@@ -174,7 +189,7 @@ namespace AnimChainsSheetPacker
                 // Set filter for file extension and default file extension 
                 //DefaultExt = ".vpm",
                 //Filter = "JPEG Files (*.jpeg)|*.jpeg|JPG Files (*.jpg)|*.jpg|PNG Files (*.png)|*.png|BMP Files (*.bmp)|*.bmp|GIF Files (*.gif)|*.gif"
-                //Filter = "PNG File (*.png)",
+                //Filter = "PNG File (*.png)|*.png",
                 Filter = filter,
                 //FilterIndex = 0,
 
@@ -219,7 +234,7 @@ namespace AnimChainsSheetPacker
 
         private void _RunPacking()
         {
-            Color? resultSheetTransparentColor = null;
+            //Color? resultSheetTransparentColor = null;
             string workDirectory;
 
             // ------------------ Packer code
@@ -239,10 +254,10 @@ namespace AnimChainsSheetPacker
                 Directory.CreateDirectory(workDirectory);
             }
 
-            string spriteImagesExportDir = Path.Combine(workDirectory, @"Sprites\");
-            if (!Directory.Exists(spriteImagesExportDir))
+            string spriteImagesExportWorkDir = Path.Combine(workDirectory, @"Sprites\");
+            if (!Directory.Exists(spriteImagesExportWorkDir))
             {
-                Directory.CreateDirectory(spriteImagesExportDir);
+                Directory.CreateDirectory(spriteImagesExportWorkDir);
             }
 
             // debug
@@ -299,7 +314,7 @@ namespace AnimChainsSheetPacker
             var pixelAnims = Packer.ChopSpriteSheetToSpriteImages(
                 animChainListSave,
                 originalSpriteSheetBmp,
-                spriteImagesExportDir
+                spriteImagesExportWorkDir
             );
 
             originalSpriteSheetBmp.Dispose();
@@ -332,7 +347,7 @@ namespace AnimChainsSheetPacker
             Packer.RunPackerCommandline(
                 _SSPDir, 
 
-                spriteImagesExportDir, 
+                spriteImagesExportWorkDir, 
 
                 workDirectory,
 
@@ -367,10 +382,10 @@ namespace AnimChainsSheetPacker
             _AddMsg(" - Loading result SpriteSheet - ");
 
             Size resultSheetSize;
-            if (resultSheetTransparentColor.HasValue)
+            if (_SheetBGColor.HasValue)
             {
                 _AddMsg("Updating result SpriteSheet");
-                resultSheetSize = Packer.ChangeResultSheetTransparentColor(workDirectory, resultSheetTransparentColor.Value);
+                resultSheetSize = Packer.ChangeResultSheetTransparentColor(workDirectory, _SheetBGColor.Value);
             }
             else
                 resultSheetSize = Packer.GetResultSheetSize(workDirectory);
@@ -433,10 +448,42 @@ namespace AnimChainsSheetPacker
             _AddMsg(" - All done - ");
         }
 
+        private ColorData[] _BuildKnownColors()
+        {
+            //List<Color> allColors = new List<Color>();
+
+            var colorPropInfos = typeof(Color).GetProperties();
+
+            // skip last 9 = empty colors
+            int wantedColorsCount = colorPropInfos.Length - 9;
+
+            ColorData[] knownColors = new ColorData[wantedColorsCount + 1];
+
+            // skip first = Transparent
+            //foreach (System.Reflection.PropertyInfo property in colorPropInfos.Skip(1))
+            System.Reflection.PropertyInfo property;
+            for (int i = 1, ii = 2; i < wantedColorsCount; i++, ii++)
+            {
+                property = colorPropInfos[i];
+                if (property.PropertyType == typeof(Color))
+                {
+                    knownColors[ii] = new ColorData(
+                            (Color)property.GetValue(null),
+                            null
+                        );
+                }
+            }
+
+            knownColors[0] = new ColorData(new Color(), "- No change -");
+            knownColors[1] = new ColorData(new Color(), "- Custom color >>");
+
+            return knownColors;
+        }
+
 
         private void SpriteSheetPackerLink_Click(object sender, RoutedEventArgs e)
         {
-            Process.Start("https://github.com/amakaseev/sprite-sheet-packer");
+            Process.Start(@"https://github.com/amakaseev/sprite-sheet-packer");
         }
         /*private void SpriteSheetPackerSourceLink_Click(object sender, RoutedEventArgs e)
         {
@@ -466,7 +513,7 @@ namespace AnimChainsSheetPacker
             var dialog = new OpenFileDialog
             {
                 DereferenceLinks = true, // default is false
-                //CheckFileExists = true,
+                CheckFileExists = false,
                 CheckPathExists = true,
                 //Multiselect = multipleImages, // default is false
                 // openFileDialog.ValidateNames ??
@@ -480,7 +527,7 @@ namespace AnimChainsSheetPacker
                 Filter = "All files (*.*)|*.*",
                 //FilterIndex = 0,
 
-                //FileName = System.IO.Path.GetFileName(filePathName),
+                FileName = "none",
                 //InitialDirectory = path //System.IO.Path.GetDirectoryName(path)
             };
 
@@ -489,7 +536,7 @@ namespace AnimChainsSheetPacker
             if (dialogResult.HasValue && dialogResult.Value)
             //&& !String.IsNullOrWhiteSpace(dialog.FileName))
             {
-                OutputDir = dialog.FileName;
+                OutputDir = Path.GetDirectoryName( dialog.FileName );
             }
         }
         private void ButClearOutputDir_Click(object sender, RoutedEventArgs e)
@@ -502,12 +549,12 @@ namespace AnimChainsSheetPacker
             var dialog = new OpenFileDialog
             {
                 DereferenceLinks = true, // default is false
-                //CheckFileExists = true,
+                CheckFileExists = false,
                 CheckPathExists = true,
                 //Multiselect = multipleImages, // default is false
                 // openFileDialog.ValidateNames ??
 
-                Title = "Select work directory for temporary files",
+                Title = "Select directory for temporary files",
 
                 // Set filter for file extension and default file extension 
                 //DefaultExt = ".vpm",
@@ -516,7 +563,7 @@ namespace AnimChainsSheetPacker
                 Filter = "All files (*.*)|*.*",
                 //FilterIndex = 0,
 
-                //FileName = System.IO.Path.GetFileName(filePathName),
+                FileName = "none",
                 //InitialDirectory = path //System.IO.Path.GetDirectoryName(path)
             };
 
@@ -525,7 +572,7 @@ namespace AnimChainsSheetPacker
             if (dialogResult.HasValue && dialogResult.Value)
             //&& !String.IsNullOrWhiteSpace(dialog.FileName))
             {
-                WorkDir = dialog.FileName;
+                WorkDir = Path.GetDirectoryName( dialog.FileName );
             }
         }
         private void ButClearWorkDir_Click(object sender, RoutedEventArgs e)
@@ -648,6 +695,35 @@ namespace AnimChainsSheetPacker
         private void ButSheetMaxSize_Click(object sender, RoutedEventArgs e)
         {
             MaxSheetSize = (int)(sender as Button).Tag;
+        }
+
+        private int _ComboBoxColorLastIndex = 0;
+        private void ComboBoxColor_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            // special cases:
+            if (ComboBoxColor.SelectedIndex == 0) // Color = None
+            {
+                SheetBGColor = null;
+                _ComboBoxColorLastIndex = ComboBoxColor.SelectedIndex;
+            }
+            else if (ComboBoxColor.SelectedIndex == 1) // Use custom color
+            {
+                if (NumColorR.Value.HasValue && NumColorG.Value.HasValue && NumColorB.Value.HasValue)
+                {
+                    SheetBGColor = Color.FromArgb(NumColorR.Value.Value, NumColorG.Value.Value, NumColorG.Value.Value);
+                    _ComboBoxColorLastIndex = ComboBoxColor.SelectedIndex;
+                }
+                else
+                {
+                    ComboBoxColor.SelectedIndex = _ComboBoxColorLastIndex;
+                }
+            }
+            // Predefined named colors
+            else
+            {
+                SheetBGColor = _PredefinedColors[ComboBoxColor.SelectedIndex].Color;
+                _ComboBoxColorLastIndex = ComboBoxColor.SelectedIndex;
+            }
         }
     }
 }
