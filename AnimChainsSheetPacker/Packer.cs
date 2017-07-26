@@ -476,7 +476,7 @@ namespace AnimChainsSheetPacker
         )
         {
             AnimationFrameSave frame;
-            int animSearchStop = animIndex + 1;
+            //int animSearchStop = animIndex + 1;
             int frameSearchStop;
 
             /*if (frameIndex == 0)
@@ -514,7 +514,7 @@ namespace AnimChainsSheetPacker
             {
                 if (animI == animIndex)
                 {
-                    // If I'm at current frame anim, set last checked frame to one before current frame
+                    // If I'm at current frame's anim, set last checked frame to one before current frame
 
                     frameSearchStop = frameIndex;
                 }
@@ -522,7 +522,7 @@ namespace AnimChainsSheetPacker
                 {
                     // Else if I'm at any preceding anim, and anim has frames, set last checked frame to last frame of anim
 
-                    frameSearchStop = animChainList[animI].Frames.Count - 1;
+                    frameSearchStop = animChainList[animI].Frames.Count;
                 }
                 else
                 {
@@ -835,6 +835,7 @@ namespace AnimChainsSheetPacker
         // - Fix transparent color
         public static Size ChangeResultSheetTransparentColor(string workDir, Color color)
         {
+            //                                                 since input directory (containing sprites) for 
             string resultSheetFilePath = Path.Combine(workDir, "Sprites.png");
 
             // v1: throsw GDI+ exception
