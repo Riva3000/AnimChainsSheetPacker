@@ -3,13 +3,17 @@ using System;
 
 namespace AnimChainsSheetPacker.DataTypes
 {
+    /// <summary>FRB Frame coordinates converted (from UV coordinates or Fractional-Pixel coordinates) to Integral-Pixel coordinates. = Rounded.</summary>
     public class PixelsFrame
     {
-        /// <summary>FRB Frame coordinates converted (from UV coordinates or Fractional-Pixel coordinates) to Integral-Pixel coordinates. = Rounded.</summary>
-        public ushort Left;
-        public ushort Right;
-        public ushort Top;
-        public ushort Bottom;
+        /// <summary>FRB Frame coordinates converted (from UV coordinates or Fractional-Pixel coordinates) to Integral-Pixel coordinates. = Rounded down.</summary>
+        public uint Left;
+        /// <summary>FRB Frame coordinates converted (from UV coordinates or Fractional-Pixel coordinates) to Integral-Pixel coordinates. = Rounded down.</summary>
+        public uint Right;
+        /// <summary>FRB Frame coordinates converted (from UV coordinates or Fractional-Pixel coordinates) to Integral-Pixel coordinates. = Rounded up.</summary>
+        public uint Top;
+        /// <summary>FRB Frame coordinates converted (from UV coordinates or Fractional-Pixel coordinates) to Integral-Pixel coordinates. = Rounded up.</summary>
+        public uint Bottom;
 
         /// <summary>FRB Frame coordinates converted from UV coordinates to Fractional-Pixel coordinates. Not rounded to Integral-Pixel.</summary>
         public decimal DecimalLeft;

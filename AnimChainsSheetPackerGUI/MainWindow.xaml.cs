@@ -301,7 +301,7 @@ namespace AnimChainsSheetPacker
 #endif
             _AddMsg(" - Loading Source achx - ");
 
-            var animChainListSave = Packer.LoadtAchx(_SourceAchx);
+            var animChainListSave = Packer.LoadAchx(_SourceAchx);
             //Debug.WriteLine(" * animChainList: " + (animChainList != null ? "loaded Count: " + animChainList.AnimationChains.Count : "null"));
 
 
