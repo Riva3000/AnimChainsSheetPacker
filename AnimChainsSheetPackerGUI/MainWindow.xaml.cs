@@ -1,4 +1,7 @@
-﻿using System;
+﻿#define dbgPrefill
+#define o // debug [o]utput
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
@@ -12,6 +15,7 @@ using System.ComponentModel;
 using Microsoft.Win32;
 //using Microsoft.Xna.Framework;
 using System.Windows.Media;
+using System.Diagnostics; // Process !
 
 using Brush = System.Windows.Media.Brush;
 using Brushes = System.Windows.Media.Brushes;
@@ -21,7 +25,6 @@ using Color = System.Drawing.Color;
 using AnimChainsSheetPacker.DataTypes;
 
 // debug
-using System.Diagnostics;
 using System.Text;
 
 
@@ -94,29 +97,50 @@ namespace AnimChainsSheetPacker
         #endregion -- Output achx params END
 
         #region    -- Paths
-        private string _OutputDir = @"W:\Programing\VisualStudio2015 Projects\TexturePackerFRBImport_misc\TestData\Output\";
+#if dbgPrefill
+        private string _OutputDir = @"W:\Programing\VisualStudio2015 Projects\FRBAnimChainsSheetPacker_misc\TestData\Output\";
+#else
+        private string _OutputDir;
+#endif
         public string OutputDir
         {
             get { return _OutputDir; }
             set { SetField(ref _OutputDir, value, "OutputDir"); }
         }
 
+
+
+#if dbgPrefill
         private string _SSPDir = @"E:\Program Files (x86)\amakaseev SpriteSheet Packer\";
+#else
+        private string _SSPDir;
+#endif
         public string SSPDir
         {
             get { return _SSPDir; }
             set { SetField(ref _SSPDir, value, "SSPDir"); }
         }
 
+
+
+#if dbgPrefill
         //                           MinimalTest01.achx - achx with one anim with one frame
-        private string _SourceAchx = @"W:\Programing\VisualStudio2015 Projects\TexturePackerFRBImport_misc\TestData\Input\MinimalTest01.achx";
+        private string _SourceAchx = @"W:\Programing\VisualStudio2015 Projects\FRBAnimChainsSheetPacker_misc\TestData\Input\MinimalTest01.achx";
+#else
+        private string _SourceAchx;
+#endif
         public string SourceAchx
         {
             get { return _SourceAchx; }
             set { SetField(ref _SourceAchx, value, "SourceAchx"); }
         }
 
-        private string _WorkDir = @"W:\Programing\VisualStudio2015 Projects\TexturePackerFRBImport_misc\TestData\Work\";
+
+#if dbgPrefill
+        private string _WorkDir = @"W:\Programing\VisualStudio2015 Projects\FRBAnimChainsSheetPacker_misc\TestData\Work\";
+#else
+        private string _WorkDir;
+#endif
         public string WorkDir
         {
             get { return _WorkDir; }
@@ -175,8 +199,9 @@ namespace AnimChainsSheetPacker
 
         private bool _ShowOpenFileDialog(string title, string filter, out string resultFilePathName)
         {
+#if o
             Debug.WriteLine(" * ShowStandardOpenFileDialog()");
-
+#endif
             var dialog = new OpenFileDialog
             {
                 DereferenceLinks = true, // default is false
@@ -271,9 +296,9 @@ namespace AnimChainsSheetPacker
 
 
             // -- Processing data
-
-
+#if o
             Debug.WriteLine("\n--------- Loading Source achx ---------\n");
+#endif
             _AddMsg(" - Loading Source achx - ");
 
             var animChainListSave = Packer.LoadtAchx(_SourceAchx);
@@ -284,8 +309,9 @@ namespace AnimChainsSheetPacker
 
 
 
-
+#if o
             Debug.WriteLine("\n--------- Loading Original SpriteSheet ---------\n");
+#endif
             _AddMsg(" - Loading original SpriteSheet - ");
 
             string originalSpriteSheetDir;
@@ -297,6 +323,7 @@ namespace AnimChainsSheetPacker
                 out originalSpriteSheetFileName
             );
             // debug
+#if o
             Debug.WriteLine(
                 " * originalSpriteSheetBmp: " + (originalSpriteSheetBmp != null ? "loaded size: " + originalSpriteSheetBmp.Width + ", " + originalSpriteSheetBmp.Height : "null")
                 +
@@ -304,12 +331,13 @@ namespace AnimChainsSheetPacker
                 +
                 "\n   originalSpriteSheetFileName: " + originalSpriteSheetFileName
             );
+#endif
 
 
 
-
-
+#if o
             Debug.WriteLine("\n--------- Chopping Original SpriteSheet ---------\n");
+#endif
             _AddMsg(" - Chopping original SpriteSheet - ");
 
             var pixelAnims = Packer.ChopSpriteSheetToSpriteImages(
@@ -340,26 +368,30 @@ namespace AnimChainsSheetPacker
 
 
 
-
+#if o
             Debug.WriteLine("\n--------- Runing Packer commandline ---------\n");
+#endif
             _AddMsg(" - Runing SpriteSheet Packer commandline - ");
 
             //Main.RunPackerGui(_SpriteSheetPackerExeFilePath);
             Packer.RunPackerCommandline(
-                _SSPDir, 
+                _SSPDir,                    // packerExeDir
 
-                spriteImagesExportWorkDir, 
+                spriteImagesExportWorkDir,  // inputDir
 
-                workDirectory,
+                workDirectory,              // outputDir
 
-                2, 2, true
+                //2, 2, true
+
+                (uint)_SheetBorder, (uint)_SpritesBorders, _SheetPowerOf2, (uint)_MaxSheetSize, _ForceSquareSheet
             );
 
 
 
 
-
+#if o
             Debug.WriteLine("\n--------- Loading Packer Json ---------\n");
+#endif
             _AddMsg(" - Loading result SpriteSheet Packer data (Json) - ");
 
             Dictionary<string, SSPFrame> packedFramesData = Packer.LoadPackerJson( 
@@ -378,8 +410,9 @@ namespace AnimChainsSheetPacker
 
 
 
-
+#if o
             Debug.WriteLine("\n--------- Geting Result SpriteSheet size ---------\n");
+#endif
             _AddMsg(" - Loading result SpriteSheet - ");
 
             Size resultSheetSize;
@@ -390,28 +423,30 @@ namespace AnimChainsSheetPacker
             }
             else
                 resultSheetSize = Packer.GetResultSheetSize(workDirectory);
-
+#if o
             Debug.WriteLine("ResultSheetSize: " + resultSheetSize);
+#endif
 
 
-
-
+#if o
             Debug.WriteLine("\n--------- Updating Original AnimChains ---------\n");
+#endif
             _AddMsg(" - Updating AnimChains - ");
 
             Packer.UpdateAnimChains(
                 animChainListSave,
                 pixelAnims,
                 packedFramesData,
-                resultSheetSize
-                //, offsetForAllFrames
+                resultSheetSize, 
+                new Microsoft.Xna.Framework.Vector2(_FramesRelativeX, _FramesRelativeY)  // offsetForAllFrames
             );
 
 
 
 
-
+#if o
             Debug.WriteLine("\n--------- Renaming (and moving) Result SpriteSheet file ---------\n");
+#endif
             _AddMsg("Moving result SpriteSheet to output directory");
             Packer.PlaceResultSpriteSheetFile(
                 overwriteInputFiles, 
@@ -420,7 +455,9 @@ namespace AnimChainsSheetPacker
                 _OutputDir
             );
 
+#if o
             Debug.WriteLine("\n--------- Saving Result achx ---------\n");
+#endif
             _AddMsg(" - Saving result achx - ");
             if (overwriteInputFiles)
             {
@@ -439,8 +476,9 @@ namespace AnimChainsSheetPacker
 
             _AddMsg(" -- Packing successfuly finished -- ", Brushes.YellowGreen);
 
-
+#if o
             Debug.WriteLine("\n--------- Cleanup temp dir ---------\n");
+#endif
             if (temporaryWorkDir)
             {
                 _AddMsg(" - Cleaning temp work dir - ");
@@ -585,7 +623,7 @@ namespace AnimChainsSheetPacker
         {
             try
             {
-                // ------------------ inputs error checking
+                #region    ------------------ inputs error checking
 
                 if (String.IsNullOrWhiteSpace(_SourceAchx))
                 {
@@ -626,7 +664,8 @@ namespace AnimChainsSheetPacker
                 {
                     _AddMsg("Wrong work directory path selected.", Brushes.Yellow);
                     return;
-                }
+                } 
+                #endregion ------------------ inputs error checking END
 
 
                 /*Packer.PackAchx(
