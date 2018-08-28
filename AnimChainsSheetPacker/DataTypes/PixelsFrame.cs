@@ -47,6 +47,7 @@ namespace AnimChainsSheetPacker.DataTypes
 
         // - For Master
         public SSPFrame PackerFrame;
+        public DecimalRect UpdatedFractPixelCoordinates;
 
         /// <summary>
         /// For possible "duplicates", if this Frame is "Master"

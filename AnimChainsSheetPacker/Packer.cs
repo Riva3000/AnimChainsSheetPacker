@@ -858,24 +858,16 @@ namespace AnimChainsSheetPacker
                 Vector2 offsetForAllFrames = new Vector2()
             )
         {
-            var frbAnimChains = animChainListSave.AnimationChains;
-            AnimationFrameSave frbFrame;
-            PixelsFrame frameConversionToPixelsData;
-            PixelsFrame frameDuplicateData;
-            SSPFrame packerFrame = null;
-            string frameIdString;
-
-            decimal fractPart;
-            DecimalRect updatedFractPixelCoordinates = new DecimalRect();
-            Size originalFrameSizeInIntPixels = new Size();
-            decimal originalFrameWidthInFractPixels;
-            decimal originalFrameHeightInFractPixels;
+            List<AnimationChainSave> frbAnimChains = animChainListSave.AnimationChains;
 
             for (int animI = 0; animI < frbAnimChains.Count; animI++)
             {
                 for (int frameI = 0; frameI < frbAnimChains[animI].Frames.Count; frameI++)
                 {
-                    frbFrame = frbAnimChains[animI].Frames[frameI];
+#if o
+                    Debug.WriteLine($"** Frame {animI} {frameI}");
+#endif
+                    AnimationFrameSave frbFrame = frbAnimChains[animI].Frames[frameI];
 
                     //KeyValuePair<string, SSPFrame> packerKV;
 
@@ -883,13 +875,13 @@ namespace AnimChainsSheetPacker
                     if (frbFrame != null)
                     {
 #if o
-                        Debug.WriteLine("** Frame is not duplicate");
+                        Debug.WriteLine(" * Frame is not duplicate");
 #endif
-                        frameConversionToPixelsData = animsInPixels[animI][frameI];
+                        PixelsFrame frameConversionToPixelsData = animsInPixels[animI][frameI];
 
-                        frameIdString = "Sprites/" + _CreateFrameIdString(animI, frameI);
+                        string frameIdString = "Sprites/" + _CreateFrameIdString(animI, frameI);
 
-                        //sspFrame = packerData[ frameIdString ];
+                        SSPFrame packerFrame;
                         if (packerData.TryGetValue(frameIdString, out packerFrame)) // frame doesn't have zero size
                         {
                             // Store Packer Frame for possible duplicate frames of this frame
@@ -901,14 +893,14 @@ namespace AnimChainsSheetPacker
                                 originalFrameWidthInFractPixels = (decimal)frbFrame.RightCoordinate - (decimal)frbFrame.LeftCoordinate;
                             else // TextureCoordinateType.UV
                                 originalFrameWidthInFractPixels = frameConversionToPixelsData.DecimalRight - frameConversionToPixelsData.DecimalLeft;*/
-                            originalFrameWidthInFractPixels = 
+                            decimal originalFrameWidthInFractPixels = 
                                 _CalculateOriginalFrameWidthInFractPixels(animChainListSave.CoordinateType, frbFrame, frameConversionToPixelsData);
 
                             /*if (animChainListSave.CoordinateType == FlatRedBall.Graphics.TextureCoordinateType.Pixel)
                                 originalFrameHeightInFractPixels = (decimal)frbFrame.BottomCoordinate - (decimal)frbFrame.TopCoordinate;
                             else // TextureCoordinateType.UV
                                 originalFrameHeightInFractPixels = frameConversionToPixelsData.DecimalBottom - frameConversionToPixelsData.DecimalTop;*/
-                            originalFrameHeightInFractPixels =
+                            decimal originalFrameHeightInFractPixels =
                                 _CalculateOriginalFrameHeightInFractPixels(animChainListSave.CoordinateType, frbFrame, frameConversionToPixelsData);
 
 
@@ -918,6 +910,8 @@ namespace AnimChainsSheetPacker
                             //   but FRB coordinates on bitmap can be fractional !
 
                             // -- x coordinate on texture
+                            DecimalRect updatedFractPixelCoordinates = new DecimalRect();
+                            decimal fractPart;
                             if (_TryGetFractPart(frbFrame.LeftCoordinate, out fractPart))
                             {
                                 // previously was floored = moved left. now I have to move it back right by it's fractional part.
@@ -977,6 +971,8 @@ namespace AnimChainsSheetPacker
                             {
                                 updatedFractPixelCoordinates.Bottom = packerFrame.frame.y + packerFrame.frame.h;
                             }
+
+                            frameConversionToPixelsData.UpdatedFractPixelCoordinates = updatedFractPixelCoordinates;
                             #endregion - Calculate updated frame coordinates in fract pixels END
 
 
@@ -1008,11 +1004,11 @@ namespace AnimChainsSheetPacker
                             // the sprite potentialy shrunk in packing. (it can never get bigger)
 
                             // did it shrink ?
-                            originalFrameSizeInIntPixels.Width = frameConversionToPixelsData.Right - frameConversionToPixelsData.Left;
-                            originalFrameSizeInIntPixels.Height = frameConversionToPixelsData.Bottom - frameConversionToPixelsData.Top;
+                            int originalFrameSizeInIntPixels_Width = frameConversionToPixelsData.Right - frameConversionToPixelsData.Left;
+                            int originalFrameSizeInIntPixels_Height = frameConversionToPixelsData.Bottom - frameConversionToPixelsData.Top;
                             //trimmedFrameSizeInIntPixels.Width = sspFrame.frame.w;
                             //trimmedFrameSizeInIntPixels.Height = sspFrame.frame.h;
-                            if (originalFrameSizeInIntPixels.Width != packerFrame.frame.w)
+                            if (originalFrameSizeInIntPixels_Width != packerFrame.frame.w)
                             {
                                 // It did shrink on X
 #if o
@@ -1057,7 +1053,7 @@ namespace AnimChainsSheetPacker
 #if o
                             Debug.Write("\n");
 #endif
-                            if (originalFrameSizeInIntPixels.Height != packerFrame.frame.h)
+                            if (originalFrameSizeInIntPixels_Height != packerFrame.frame.h)
                             {
                                 // It did shrink on Y
 #if o
@@ -1139,18 +1135,25 @@ namespace AnimChainsSheetPacker
                     else // frame is duplicate - of some previous frame
                     {
 #if o
-                        Debug.WriteLine("** Frame IS duplicate");
+                        Debug.WriteLine(" * Frame IS duplicate");
 #endif
                         // ** Dont forget frame is only duplicate in coordinates
                         //    Frames can still have different offsets, Frame times, V or H flips
                         //    V and/or H fliped frame will have different corrective Left, Top offsets than it's non flipped "master" frame !
 
-                        frameDuplicateData = animsInPixels[animI][frameI];
+                        PixelsFrame frameDuplicateData = animsInPixels[animI][frameI];
                         frbFrame = frameDuplicateData.FRBFrame;
 
                         // Return original FRB Frame to it's place in AnimChainsList - to preserve Frame time
                         frbAnimChains[animI].Frames[frameI] = frbFrame;
 
+                        decimal originalFrameWidthInFractPixels =
+                            _CalculateOriginalFrameWidthInFractPixels(
+                                animChainListSave.CoordinateType, frbFrame, frameDuplicateData.MasterPixelsFrame);
+
+                        decimal originalFrameHeightInFractPixels =
+                            _CalculateOriginalFrameHeightInFractPixels(
+                                animChainListSave.CoordinateType, frbFrame, frameDuplicateData.MasterPixelsFrame);
 
                         #region    - Udate FRB Frame positions
                         // From "master" frame. Position on new packed sheet is the same no matter flips etc.
@@ -1161,6 +1164,9 @@ namespace AnimChainsSheetPacker
                         #endregion - Udate FRB Frame positions END
 
                         #region    - Update FRB Frame offset
+#if o
+                        Debug.WriteLine(" * Updating FRB Frame offset");
+#endif
                         // Did it shrink ?
                         if (frameDuplicateData.MasterPixelsFrame.ShrunkInPacking_Width)
                         {
@@ -1176,7 +1182,9 @@ namespace AnimChainsSheetPacker
                             {
                                 // Frames have same H (X) flip
                                 // => use correction offset from master frame
-
+#if o
+                                Debug.WriteLine("\t Master and Duplicate have same Flip => using offset from Master \n");
+#endif
                                 frameDuplicateData.FRBFrame.RelativeX +=
                                     frameDuplicateData.MasterPixelsFrame.PackingCorrectionOffsetX + offsetForAllFrames.X;
                             }
@@ -1184,18 +1192,16 @@ namespace AnimChainsSheetPacker
                             {
                                 // Frames have different H (X) flip
                                 // Calculate new correction offset for this frame
-
+#if o
+                                Debug.WriteLine("\t Master and Duplicate have DIFFERENT Flip => calculating new offset \n");
+#endif
                                 // ..Get data
-                                packerFrame = frameDuplicateData.MasterPixelsFrame.PackerFrame;
+                                SSPFrame packerFrame = frameDuplicateData.MasterPixelsFrame.PackerFrame;
 
                                 // ..calculate
-                                originalFrameWidthInFractPixels =
-                                    _CalculateOriginalFrameWidthInFractPixels(
-                                        animChainListSave.CoordinateType, frbFrame, frameDuplicateData.MasterPixelsFrame);
-
                                 frameDuplicateData.FRBFrame.RelativeX +=
                                     _CalculateCorrectionOffsetX(
-                                        originalFrameWidthInFractPixels, updatedFractPixelCoordinates, 
+                                        originalFrameWidthInFractPixels, frameDuplicateData.MasterPixelsFrame.UpdatedFractPixelCoordinates, 
                                         packerFrame.spriteSourceSize, frbFrame.FlipHorizontal )
                                     + 
                                     offsetForAllFrames.X;
@@ -1203,6 +1209,10 @@ namespace AnimChainsSheetPacker
                         }
                         // It didn't shrink on X => no correction offset needed
                         // .. ?
+
+#if o
+                        Debug.Write("\n");
+#endif
 
                         if (frameDuplicateData.MasterPixelsFrame.ShrunkInPacking_Width)
                         {
@@ -1217,7 +1227,9 @@ namespace AnimChainsSheetPacker
                             {
                                 // Frames have same V (Y) flip
                                 // => use correction offset from master frame
-
+#if o
+                                Debug.WriteLine("\t Master and Duplicate have same Flip => using offset from Master \n");
+#endif
                                 frameDuplicateData.FRBFrame.RelativeY +=
                                     frameDuplicateData.MasterPixelsFrame.PackingCorrectionOffsetY + offsetForAllFrames.Y;
                             }
@@ -1225,19 +1237,16 @@ namespace AnimChainsSheetPacker
                             {
                                 // Frames have different V (Y) flip
                                 // Calculate new correction offset for this frame
-
+#if o
+                                Debug.WriteLine("\t Master and Duplicate have DIFFERENT Flip => calculating new offset \n");
+#endif
                                 // ..Get data
-                                if (packerFrame == null)
-                                    packerFrame = frameDuplicateData.MasterPixelsFrame.PackerFrame;                                  
+                                SSPFrame packerFrame = frameDuplicateData.MasterPixelsFrame.PackerFrame;                                  
                                 
                                 // ..calculate
-                                originalFrameHeightInFractPixels =
-                                    _CalculateOriginalFrameHeightInFractPixels(
-                                        animChainListSave.CoordinateType, frbFrame, frameDuplicateData.MasterPixelsFrame);
-
                                 frameDuplicateData.FRBFrame.RelativeY +=
                                     _CalculateCorrectionOffsetY(
-                                        originalFrameHeightInFractPixels, updatedFractPixelCoordinates, 
+                                        originalFrameHeightInFractPixels, frameDuplicateData.MasterPixelsFrame.UpdatedFractPixelCoordinates, 
                                         packerFrame.spriteSourceSize, frbFrame.FlipVertical )
                                     + 
                                     offsetForAllFrames.X;
@@ -1249,13 +1258,6 @@ namespace AnimChainsSheetPacker
 
                     }
                     #endregion --- frame is duplicate END
-
-                    // Cleanup after this frame
-                    frbFrame = null;
-                    frameConversionToPixelsData = null;
-                    frameDuplicateData = null;
-                    packerFrame = null;
-                    frameIdString = null;
 #if o
                     Debug.Write("\n");
 #endif
