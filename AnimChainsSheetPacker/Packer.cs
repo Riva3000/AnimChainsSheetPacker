@@ -1009,6 +1009,7 @@ namespace AnimChainsSheetPacker
 
                                 // calculate Frame X offset
 
+                                /*// v1
                                 decimal originalCenterX = originalFrameWidthInFractPixels / 2M;
 
                                 decimal trimmedWidth = updatedFractPixelCoordinates.Right - updatedFractPixelCoordinates.Left;
@@ -1019,6 +1020,13 @@ namespace AnimChainsSheetPacker
 
                                 // Store calculated clean correction offset
                                 frameConversionToPixelsData.PackingCorrectionOffsetX = Decimal.ToSingle(centerXoffset);
+                                */
+
+                                // Store calculated clean correction offset
+                                frameConversionToPixelsData.PackingCorrectionOffsetX = 
+                                    // v2
+                                    _CalculateCorrectionOffsetX(
+                                        originalFrameWidthInFractPixels, updatedFractPixelCoordinates, packerFrame.spriteSourceSize.x );
 
                                 // Acknowledge any previous offset (set on the Frame by anim creator)
                                 frbFrame.RelativeX += frameConversionToPixelsData.PackingCorrectionOffsetX + offsetForAllFrames.X;
@@ -1052,6 +1060,7 @@ namespace AnimChainsSheetPacker
 
                                 // calculate Frame Y offset
 
+                                /*// v1
                                 decimal originalCenterY = originalFrameHeightInFractPixels / 2M;
 
                                 decimal trimmedHeight = updatedFractPixelCoordinates.Bottom - updatedFractPixelCoordinates.Top;
@@ -1060,10 +1069,15 @@ namespace AnimChainsSheetPacker
                                 decimal trimmedGoodCenterY = originalCenterY - packerFrame.spriteSourceSize.y;
                                 decimal centerYoffset = trimmedGoodCenterY - trimmedWrongCenterY;
 
-
-
                                 // Store calculated clean correction offset
                                 frameConversionToPixelsData.PackingCorrectionOffsetY = Decimal.ToSingle(centerYoffset);
+                                */
+
+                                // Store calculated clean correction offset
+                                frameConversionToPixelsData.PackingCorrectionOffsetY =
+                                    // v2
+                                    _CalculateCorrectionOffsetY(
+                                        originalFrameHeightInFractPixels, updatedFractPixelCoordinates, packerFrame.spriteSourceSize.y );
 
                                 // Acknowledge any previous offset (set on the Frame by anim creator)
                                 frbFrame.RelativeY += frameConversionToPixelsData.PackingCorrectionOffsetY + offsetForAllFrames.Y;
@@ -1095,6 +1109,7 @@ namespace AnimChainsSheetPacker
 
                             #endregion - Update FRB Frame offset END
                         }
+                        #region    - frame has zero size
                         else // frame has zero size
                         {
                             if (frameConversionToPixelsData.HasZeroWidth)
@@ -1115,7 +1130,8 @@ namespace AnimChainsSheetPacker
                                 frbFrame.RightCoordinate = frbFrame.RightCoordinate - frbFrame.LeftCoordinate;
                                 frbFrame.LeftCoordinate = 0f;
                             }
-                        }
+                        } 
+                        #endregion - frame has zero size END
                     }
                     #endregion --- frame is not duplicate END
                     #region    --- frame is duplicate
@@ -1218,26 +1234,34 @@ namespace AnimChainsSheetPacker
             }
         }
 
-        private static float _CalculateCorrectionOffsetX( )
+        private static float _CalculateCorrectionOffsetX(
+            decimal originalFrameWidthInFractPixels, DecimalRect updatedFractPixelCoordinates, int trimmedWidthInPixels )
         {
-            decimal originalCenterY = originalFrameHeightInFractPixels / 2M;
+            decimal originalCenterX = originalFrameWidthInFractPixels / 2M;
 
-            decimal trimmedHeight = updatedFractPixelCoordinates.Bottom - updatedFractPixelCoordinates.Top;
-            decimal trimmedWrongCenterY = trimmedHeight / 2M;
+            decimal trimmedWidth = updatedFractPixelCoordinates.Right - updatedFractPixelCoordinates.Left;
+            decimal trimmedWrongCenterX = trimmedWidth / 2M;
 
-            decimal trimmedGoodCenterY = originalCenterY - packerFrame.spriteSourceSize.y;
-            decimal centerYoffset = trimmedGoodCenterY - trimmedWrongCenterY;
+            //decimal trimmedGoodCenterX = originalCenterX - packerFrame.spriteSourceSize.x;
+            decimal trimmedGoodCenterX = originalCenterX - trimmedWidthInPixels;
+            decimal centerXoffset = -(trimmedGoodCenterX - trimmedWrongCenterX);
+
+            return Decimal.ToSingle(centerXoffset);
         }
 
-        private static float _CalculateCorrectionOffsetY( )
+        private static float _CalculateCorrectionOffsetY(
+            decimal originalFrameHeightInFractPixels, DecimalRect updatedFractPixelCoordinates, int trimmedHeightInPixels )
         {
             decimal originalCenterY = originalFrameHeightInFractPixels / 2M;
 
             decimal trimmedHeight = updatedFractPixelCoordinates.Bottom - updatedFractPixelCoordinates.Top;
             decimal trimmedWrongCenterY = trimmedHeight / 2M;
 
-            decimal trimmedGoodCenterY = originalCenterY - packerFrame.spriteSourceSize.y;
+            //decimal trimmedGoodCenterY = originalCenterY - packerFrame.spriteSourceSize.y;
+            decimal trimmedGoodCenterY = originalCenterY - trimmedHeightInPixels;
             decimal centerYoffset = trimmedGoodCenterY - trimmedWrongCenterY;
+
+            return Decimal.ToSingle(centerYoffset);
         }
 
 
