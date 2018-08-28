@@ -26,26 +26,33 @@ namespace AnimChainsSheetPacker.DataTypes
 
 
         #region    -- Duplicate / Master data
-
+        // - For Duplicate
         /// <summary>
         /// Frame of which this Frame is "duplicate" = has same coordinates on original sprite sheet.
         /// Only assigned if this frame is "duplicate" of other Frame.
         /// </summary>
         public PixelsFrame MasterPixelsFrame;
+
         /// <summary>
         /// Frame of which this Frame is "duplicate" = has same coordinates on original sprite sheet.
         /// Only assigned if this frame is "duplicate" of other Frame.
         /// </summary>
         public AnimationFrameSave MasterFRBFrame;
+
         /// <summary>
         /// "Original" FRB Frame of this PixelsFrame. Only assigned if this frame is "duplicate" of other Frame.
         /// </summary>
         public AnimationFrameSave FRBFrame;
 
+
+        // - For Master
+        public SSPFrame PackerFrame;
+
         /// <summary>
         /// For possible "duplicates", if this Frame is "Master"
         /// </summary>
         public float PackingCorrectionOffsetX;
+
          /// <summary>
         /// For possible "duplicates", if this Frame is "Master"
         /// </summary>

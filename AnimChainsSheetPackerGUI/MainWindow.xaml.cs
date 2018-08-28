@@ -42,7 +42,11 @@ namespace AnimChainsSheetPacker
             set { SetField(ref _SheetBorder, value, "SheetBorder"); }
         }
 
+#if dbgPrefill
+        private int _SpritesBorders = 1;
+#else
         private int _SpritesBorders = 0;
+#endif
         public int SpritesBorders
         {
             get { return _SpritesBorders; }
@@ -98,7 +102,9 @@ namespace AnimChainsSheetPacker
 
         #region    -- Paths
 #if dbgPrefill
-        private string _OutputDir = @"W:\Programing\VisualStudio2015 Projects\FRBAnimChainsSheetPacker_misc\TestData\Output\";
+        private string _OutputDir = 
+            //@"W:\Programing\VisualStudio2015 Projects\FRBAnimChainsSheetPacker_misc\TestData\Output\";
+            @"W:\Programing\VisualStudio2015 Projects\FRBAnimChainsSheetPacker_misc\TestData fliped frames\Output\";
 #else
         private string _OutputDir;
 #endif
@@ -111,7 +117,9 @@ namespace AnimChainsSheetPacker
 
 
 #if dbgPrefill
-        private string _SSPDir = @"E:\Program Files (x86)\amakaseev SpriteSheet Packer\";
+        private string _SSPDir =
+            //@"E:\Program Files (x86)\amakaseev SpriteSheet Packer\";
+            @"C:\Program Files (x86)\SpriteSheet Packer\";
 #else
         private string _SSPDir;
 #endif
@@ -124,8 +132,11 @@ namespace AnimChainsSheetPacker
 
 
 #if dbgPrefill
-        //                           MinimalTest01.achx - achx with one anim with one frame
-        private string _SourceAchx = @"W:\Programing\VisualStudio2015 Projects\FRBAnimChainsSheetPacker_misc\TestData\Input\MinimalTest01.achx";
+        
+        private string _SourceAchx = 
+            // MinimalTest01.achx - achx with one anim with one frame
+            //@"W:\Programing\VisualStudio2015 Projects\FRBAnimChainsSheetPacker_misc\TestData\Input\MinimalTest01.achx";
+            @"W:\Programing\VisualStudio2015 Projects\FRBAnimChainsSheetPacker_misc\TestData fliped frames\Input\TestArrow.achx";
 #else
         private string _SourceAchx;
 #endif
@@ -137,7 +148,9 @@ namespace AnimChainsSheetPacker
 
 
 #if dbgPrefill
-        private string _WorkDir = @"W:\Programing\VisualStudio2015 Projects\FRBAnimChainsSheetPacker_misc\TestData\Work\";
+        private string _WorkDir = 
+            //@"W:\Programing\VisualStudio2015 Projects\FRBAnimChainsSheetPacker_misc\TestData\Work\";
+            @"W:\Programing\VisualStudio2015 Projects\FRBAnimChainsSheetPacker_misc\TestData fliped frames\Work\";
 #else
         private string _WorkDir;
 #endif
@@ -664,7 +677,7 @@ namespace AnimChainsSheetPacker
                 {
                     _AddMsg("Wrong work directory path selected.", Brushes.Yellow);
                     return;
-                } 
+                }
                 #endregion ------------------ inputs error checking END
 
 
@@ -684,6 +697,38 @@ namespace AnimChainsSheetPacker
 
                 _RunPacking();
             }
+#if o
+            catch (AnimChainsSheetPackerException ex)
+            {
+                switch (ex.ErrorCode)
+                {
+                    case AnimChainsSheetPackerErrorCode.AnimationChainList_Empty_NoAnims:
+                        _AddMsg("Achx has no AnimationChains.", Brushes.Yellow);
+                        return;
+                    case AnimChainsSheetPackerErrorCode.AnimationChainList_Empty_NoFrames:
+                        _AddMsg("Achx has no AnimationFrames.", Brushes.Yellow);
+                        return;
+                    case AnimChainsSheetPackerErrorCode.NotSupported_AnimationChainList_MutlipleImages:
+                        _AddMsg("Achx uses multiple sprite / sprite sheet images. Not yet supported.", Brushes.Yellow);
+                        return;
+                    case AnimChainsSheetPackerErrorCode.NotSupported_AnimationFrame_Flipped:
+                        _AddMsg("Some AnimationFrames in Achx use Horizontal / Vertical flipping. Not yet supported.", Brushes.Yellow);
+                        return;
+                    case AnimChainsSheetPackerErrorCode.InputImage_ZeroSize:
+                        _AddMsg("Sprite sheet inage used by achx has zero width or height.", Brushes.Yellow);
+                        return;
+                    case AnimChainsSheetPackerErrorCode.InputImage_NotFound:
+                        _AddMsg("Sprite sheet inage file used by achx not found.", Brushes.Yellow);
+                        return;
+                    case AnimChainsSheetPackerErrorCode.SpriteSheetPacker_Error:
+                        _AddMsg("Uknown SpriteSheet Packer error.", Brushes.Red);
+                        return;
+
+                    default:
+                        throw;
+                }
+            }
+#else
             catch (Exception ex)
             {
                 if (ex is AnimChainsSheetPackerException)
@@ -730,6 +775,7 @@ namespace AnimChainsSheetPacker
                 _AddMsg("Uknown error:" + ex.Message, Brushes.Red);
                 return;
             }
+#endif
         }
 
         private void ButSheetMaxSize_Click(object sender, RoutedEventArgs e)
