@@ -889,7 +889,10 @@ namespace AnimChainsSheetPacker
                         //sspFrame = packerData[ frameIdString ];
                         if (packerData.TryGetValue(frameIdString, out packerFrame)) // frame doesn't have zero size
                         {
-                            //packerData.Remove(frameIdString);
+                            // Store Packer Frame for possible duplicate frames of this frame
+                            frameConversionToPixelsData.PackerFrame = packerFrame;
+                            // Remove data from Dictionary - faster future search
+                            packerData.Remove(frameIdString);
 
                             /*if (animChainListSave.CoordinateType == FlatRedBall.Graphics.TextureCoordinateType.Pixel)
                                 originalFrameWidthInFractPixels = (decimal)frbFrame.RightCoordinate - (decimal)frbFrame.LeftCoordinate;
@@ -1036,18 +1039,6 @@ namespace AnimChainsSheetPacker
                                 frbFrame.RelativeX += frameConversionToPixelsData.PackingCorrectionOffsetX + offsetForAllFrames.X;
 #if o
                                 Debug.WriteLine(
-                                    "\t originalWidth: " + originalFrameWidthInFractPixels
-                                    +
-                                    "\n\t originalCenterX: " + originalCenterX
-                                    +
-                                    "\n\t trimmedWidth: " + trimmedWidth
-                                    +
-                                    "\n\t trimmedWrongCenterX: " + trimmedWrongCenterX
-                                    +
-                                    "\n\t trimmedGoodCenterX: " + trimmedGoodCenterX
-                                    +
-                                    "\n\t centerXoffset: " + centerXoffset
-                                    +
                                     "\n\t * frbFrame.RelativeX: " + frbFrame.RelativeX
                                 );
 #endif
@@ -1088,18 +1079,6 @@ namespace AnimChainsSheetPacker
                                 frbFrame.RelativeY += frameConversionToPixelsData.PackingCorrectionOffsetY + offsetForAllFrames.Y;
 #if o
                                 Debug.WriteLine(
-                                    "\t originalHeight: " + originalFrameHeightInFractPixels
-                                    +
-                                    "\n\t originalCenterY: " + originalCenterY
-                                    +
-                                    "\n\t trimmedHeight: " + trimmedHeight
-                                    +
-                                    "\n\t trimmedWrongCenterY: " + trimmedWrongCenterY
-                                    +
-                                    "\n\t trimmedGoodCenterY: " + trimmedGoodCenterY
-                                    +
-                                    "\n\t centerYoffset: " + centerYoffset
-                                    +
                                     "\n\t * frbFrame.RelativeY: " + frbFrame.RelativeY
                                 );
 #endif
@@ -1117,6 +1096,9 @@ namespace AnimChainsSheetPacker
                         #region    - frame has zero size
                         else // frame has zero size
                         {
+#if o
+                            Debug.WriteLine("\n\t * frame has zero size");
+#endif
                             if (frameConversionToPixelsData.HasZeroWidth)
                             {
                                 // since it doesn't matter, place it to the left border of sheet
@@ -1182,8 +1164,7 @@ namespace AnimChainsSheetPacker
                                 // Calculate new correction offset for this frame
 
                                 // ..Get data
-                                frameIdString = "Sprites/" + _CreateFrameIdString(animI, frameI);
-                                packerFrame = packerData[ frameIdString ];
+                                packerFrame = frameDuplicateData.MasterPixelsFrame.PackerFrame;
 
                                 // ..calculate
                                 originalFrameWidthInFractPixels =
@@ -1220,10 +1201,7 @@ namespace AnimChainsSheetPacker
 
                                 // ..Get data
                                 if (packerFrame == null)
-                                {
-                                    frameIdString = "Sprites/" + _CreateFrameIdString(animI, frameI);
-                                    packerFrame = packerData[ frameIdString ];                                   
-                                }
+                                    packerFrame = frameDuplicateData.MasterPixelsFrame.PackerFrame;                                  
                                 
                                 // ..calculate
                                 originalFrameHeightInFractPixels =
@@ -1318,15 +1296,31 @@ namespace AnimChainsSheetPacker
             {
                 // Use offset from right, instead of left
                 decimal offsetFromRight = originalFrameWidthInFractPixels - trimmedWidth - offsetsFromOriginalSprite.x;
-                trimmedGoodCenterX = originalCenterX - offsetFromRight;
+                trimmedGoodCenterX = originalCenterX - offsetFromRight; // + / - ?
             }
             else
             {
-                // Use offset from right
+                // Use offset from left
                 trimmedGoodCenterX = originalCenterX - offsetsFromOriginalSprite.x;
             }
 
             decimal centerXoffset = -(trimmedGoodCenterX - trimmedWrongCenterX);
+
+#if o
+            Debug.WriteLine(
+                "\t originalWidth: " + originalFrameWidthInFractPixels
+                +
+                "\n\t originalCenterX: " + originalCenterX
+                +
+                "\n\t trimmedWidth: " + trimmedWidth
+                +
+                "\n\t trimmedWrongCenterX: " + trimmedWrongCenterX
+                +
+                "\n\t trimmedGoodCenterX: " + trimmedGoodCenterX
+                +
+                "\n\t centerXoffset: " + centerXoffset
+            );
+#endif
 
             return Decimal.ToSingle(centerXoffset);
         }
@@ -1343,6 +1337,22 @@ namespace AnimChainsSheetPacker
             //decimal trimmedGoodCenterY = originalCenterY - packerFrame.spriteSourceSize.y;
             decimal trimmedGoodCenterY = originalCenterY - offsetsFromOriginalSprite.y;
             decimal centerYoffset = trimmedGoodCenterY - trimmedWrongCenterY;
+
+#if o
+            Debug.WriteLine(
+                "\t originalHeight: " + originalFrameHeightInFractPixels
+                +
+                "\n\t originalCenterY: " + originalCenterY
+                +
+                "\n\t trimmedHeight: " + trimmedHeight
+                +
+                "\n\t trimmedWrongCenterY: " + trimmedWrongCenterY
+                +
+                "\n\t trimmedGoodCenterY: " + trimmedGoodCenterY
+                +
+                "\n\t centerYoffset: " + centerYoffset
+            );
+#endif
 
             return Decimal.ToSingle(centerYoffset);
         }
