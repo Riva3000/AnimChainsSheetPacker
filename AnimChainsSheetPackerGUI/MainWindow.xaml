@@ -215,7 +215,7 @@
         <!-- achx options grid -->
         <Rectangle Grid.Row="5" Grid.RowSpan="3" Fill="{DynamicResource BGRedish}" />
         <TextBlock Grid.Row="5" Text="Result achx options" DockPanel.Dock="Top" HorizontalAlignment="Center" Margin="10,6,10,0" />
-        <TextBlock Grid.Row="6" Text="Add Relative position to all Frames" DockPanel.Dock="Top" HorizontalAlignment="Center" Margin="10,6,10,0" />
+        <TextBlock Grid.Row="6" Text="Add Relative offset to all Frames" DockPanel.Dock="Top" HorizontalAlignment="Center" Margin="10,6,10,0" />
         <Grid Grid.Row="7" Margin="10,6,10,10" DockPanel.Dock="Top" MaxWidth="600" >
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto" SharedSizeGroup="g1" />

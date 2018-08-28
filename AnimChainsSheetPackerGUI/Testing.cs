@@ -24,7 +24,7 @@ namespace AnimChainsSheetPackerGUI
             var animChainListSave =
                 //Main.LoadOriginalAchx( inputAchxFilePath );
                 //AnimationChainListSave.FromFile( inputAchxFilePath );
-                Packer.LoadtAchx(inputAchxFilePath);
+                Packer.LoadAchx(inputAchxFilePath);
             //Debug.WriteLine(" * animChainList: " + (animChainList != null ? "loaded Count: " + animChainList.AnimationChains.Count : "null"));
 
             string originalSpriteSheetDir;
