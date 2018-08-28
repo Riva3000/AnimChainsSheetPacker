@@ -27,6 +27,7 @@ namespace AnimChainsSheetPacker.DataTypes
 
         #region    -- Duplicate / Master data
         // - For Duplicate
+
         /// <summary>
         /// Frame of which this Frame is "duplicate" = has same coordinates on original sprite sheet.
         /// Only assigned if this frame is "duplicate" of other Frame.
@@ -46,8 +47,6 @@ namespace AnimChainsSheetPacker.DataTypes
 
 
         // - For Master
-        public SSPFrame PackerFrame;
-        public DecimalRect UpdatedFractPixelCoordinates;
 
         /// <summary>
         /// For possible "duplicates", if this Frame is "Master"

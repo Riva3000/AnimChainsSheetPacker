@@ -1,4 +1,4 @@
-﻿#define o // debug [o]utput
+﻿//#define o // debug [o]utput
 
 using System;
 using System.Collections.Generic;
@@ -884,8 +884,6 @@ namespace AnimChainsSheetPacker
                         SSPFrame packerFrame;
                         if (packerData.TryGetValue(frameIdString, out packerFrame)) // frame doesn't have zero size
                         {
-                            // Store Packer Frame for possible duplicate frames of this frame
-                            frameConversionToPixelsData.PackerFrame = packerFrame;
                             // Remove data from Dictionary - faster future search
                             packerData.Remove(frameIdString);
 
@@ -971,8 +969,6 @@ namespace AnimChainsSheetPacker
                             {
                                 updatedFractPixelCoordinates.Bottom = packerFrame.frame.y + packerFrame.frame.h;
                             }
-
-                            frameConversionToPixelsData.UpdatedFractPixelCoordinates = updatedFractPixelCoordinates;
                             #endregion - Calculate updated frame coordinates in fract pixels END
 
 
@@ -1191,24 +1187,16 @@ namespace AnimChainsSheetPacker
                             else
                             {
                                 // Frames have different H (X) flip
-                                // Calculate new correction offset for this frame
+                                // => use correction offset from master frame, flip value's sign
 #if o
-                                Debug.WriteLine("\t Master and Duplicate have DIFFERENT Flip => calculating new offset \n");
+                                Debug.WriteLine("\t Master and Duplicate have DIFFERENT Flip => use correction offset from master frame, flip value's sign \n");
 #endif
-                                // ..Get data
-                                SSPFrame packerFrame = frameDuplicateData.MasterPixelsFrame.PackerFrame;
-
-                                // ..calculate
                                 frameDuplicateData.FRBFrame.RelativeX +=
-                                    _CalculateCorrectionOffsetX(
-                                        originalFrameWidthInFractPixels, frameDuplicateData.MasterPixelsFrame.UpdatedFractPixelCoordinates, 
-                                        packerFrame.spriteSourceSize, frbFrame.FlipHorizontal )
-                                    + 
-                                    offsetForAllFrames.X;
+                                    -frameDuplicateData.MasterPixelsFrame.PackingCorrectionOffsetX
+                                    + offsetForAllFrames.X;
                             }
                         }
                         // It didn't shrink on X => no correction offset needed
-                        // .. ?
 
 #if o
                         Debug.Write("\n");
@@ -1236,20 +1224,14 @@ namespace AnimChainsSheetPacker
                             else
                             {
                                 // Frames have different V (Y) flip
-                                // Calculate new correction offset for this frame
+                                // => use correction offset from master frame, flip value's sign
 #if o
-                                Debug.WriteLine("\t Master and Duplicate have DIFFERENT Flip => calculating new offset \n");
+                                Debug.WriteLine("\t Master and Duplicate have DIFFERENT Flip => use correction offset from master frame, flip value's sign \n");
 #endif
-                                // ..Get data
-                                SSPFrame packerFrame = frameDuplicateData.MasterPixelsFrame.PackerFrame;                                  
-                                
                                 // ..calculate
                                 frameDuplicateData.FRBFrame.RelativeY +=
-                                    _CalculateCorrectionOffsetY(
-                                        originalFrameHeightInFractPixels, frameDuplicateData.MasterPixelsFrame.UpdatedFractPixelCoordinates, 
-                                        packerFrame.spriteSourceSize, frbFrame.FlipVertical )
-                                    + 
-                                    offsetForAllFrames.X;
+                                    -frameDuplicateData.MasterPixelsFrame.PackingCorrectionOffsetY
+                                    + offsetForAllFrames.X;
                             }
                         }
                         // It didn't shrink on Y => no correction offset needed
