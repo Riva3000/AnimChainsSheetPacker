@@ -1,4 +1,4 @@
-﻿//#define o // debug [o]utput
+﻿#define o // debug [o]utput
 
 using System;
 using System.Collections.Generic;
@@ -882,6 +882,9 @@ namespace AnimChainsSheetPacker
                     #region    --- frame is not duplicate
                     if (frbFrame != null)
                     {
+#if o
+                        Debug.WriteLine("** Frame is not duplicate");
+#endif
                         frameConversionToPixelsData = animsInPixels[animI][frameI];
 
                         frameIdString = "Sprites/" + _CreateFrameIdString(animI, frameI);
@@ -907,6 +910,8 @@ namespace AnimChainsSheetPacker
                                 originalFrameHeightInFractPixels = frameConversionToPixelsData.DecimalBottom - frameConversionToPixelsData.DecimalTop;*/
                             originalFrameHeightInFractPixels =
                                 _CalculateOriginalFrameHeightInFractPixels(animChainListSave.CoordinateType, frbFrame, frameConversionToPixelsData);
+
+
 
                             #region    - Calculate updated frame coordinates in fract pixels
                             // - coordinates on bitmap in pixels - should be just updated to new coordinates from SSPacker
@@ -1010,7 +1015,12 @@ namespace AnimChainsSheetPacker
                             if (originalFrameSizeInIntPixels.Width != packerFrame.frame.w)
                             {
                                 // It did shrink on X
-
+#if o
+                                Debug.WriteLine("\t Sprite W shrinked");
+                                if (frbFrame.FlipHorizontal)
+                                    Debug.WriteLine("\t Fliped Horizontal");
+                                Debug.Write("\n");
+#endif
                                 frameConversionToPixelsData.ShrunkInPacking_Width = true;
 
                                 // calculate Frame X offset
@@ -1045,12 +1055,17 @@ namespace AnimChainsSheetPacker
                             }
                             // It didn't shrink on X => no correction offset needed
 #if o
-                            Debug.WriteLine("");
+                            Debug.Write("\n");
 #endif
                             if (originalFrameSizeInIntPixels.Height != packerFrame.frame.h)
                             {
                                 // It did shrink on Y
-
+#if o
+                                Debug.WriteLine("\t Sprite H shrinked");
+                                if (frbFrame.FlipVertical)
+                                    Debug.WriteLine("\t Fliped Vertical");
+                                Debug.Write("\n");
+#endif
                                 frameConversionToPixelsData.ShrunkInPacking_Height = true;
 
                                 // calculate Frame Y offset
@@ -1084,7 +1099,6 @@ namespace AnimChainsSheetPacker
 #endif
                             }
                             // It didn't shrink on Y => no correction offset needed
-
 
 
                             // ??
@@ -1124,6 +1138,9 @@ namespace AnimChainsSheetPacker
                     #region    --- frame is duplicate
                     else // frame is duplicate - of some previous frame
                     {
+#if o
+                        Debug.WriteLine("** Frame IS duplicate");
+#endif
                         // ** Dont forget frame is only duplicate in coordinates
                         //    Frames can still have different offsets, Frame times, V or H flips
                         //    V and/or H fliped frame will have different corrective Left, Top offsets than it's non flipped "master" frame !
@@ -1148,7 +1165,12 @@ namespace AnimChainsSheetPacker
                         if (frameDuplicateData.MasterPixelsFrame.ShrunkInPacking_Width)
                         {
                             // It did shrink on X
-
+#if o
+                            Debug.WriteLine("\t Sprite W shrinked");
+                            if (frbFrame.FlipHorizontal)
+                                Debug.WriteLine("\t Fliped Horizontal");
+                            Debug.Write("\n");
+#endif
                             // Does duplicate have same flips as original frame ?
                             if (frameDuplicateData.FRBFrame.FlipHorizontal == frameDuplicateData.MasterFRBFrame.FlipHorizontal)
                             {
@@ -1185,7 +1207,12 @@ namespace AnimChainsSheetPacker
                         if (frameDuplicateData.MasterPixelsFrame.ShrunkInPacking_Width)
                         {
                             // It did shrink on Y
-
+#if o
+                            Debug.WriteLine("\t Sprite H shrinked");
+                            if (frbFrame.FlipVertical)
+                                Debug.WriteLine("\t Fliped Vertical");
+                            Debug.Write("\n");
+#endif
                             if (frameDuplicateData.FRBFrame.FlipVertical == frameDuplicateData.MasterFRBFrame.FlipVertical)
                             {
                                 // Frames have same V (Y) flip
@@ -1229,6 +1256,9 @@ namespace AnimChainsSheetPacker
                     frameDuplicateData = null;
                     packerFrame = null;
                     frameIdString = null;
+#if o
+                    Debug.Write("\n");
+#endif
                 }
             }
         }
@@ -1291,7 +1321,7 @@ namespace AnimChainsSheetPacker
             // new trim good center 
             // [old center] - [trim offset]
             // decimal trimmedGoodCenterX = originalCenterX - packerFrame.spriteSourceSize.x;
-            decimal trimmedGoodCenterX;
+            /*decimal trimmedGoodCenterX;
             if (flipped)
             {
                 // Use offset from right, instead of left
@@ -1302,10 +1332,15 @@ namespace AnimChainsSheetPacker
             {
                 // Use offset from left
                 trimmedGoodCenterX = originalCenterX - offsetsFromOriginalSprite.x;
-            }
+            }*/
+            // Use offset from left
+            decimal trimmedGoodCenterX = originalCenterX - offsetsFromOriginalSprite.x;
 
-            decimal centerXoffset = -(trimmedGoodCenterX - trimmedWrongCenterX);
-
+            decimal centerXoffset;
+            if (flipped)
+                centerXoffset = trimmedGoodCenterX - trimmedWrongCenterX;
+            else
+                centerXoffset = -(trimmedGoodCenterX - trimmedWrongCenterX);
 #if o
             Debug.WriteLine(
                 "\t originalWidth: " + originalFrameWidthInFractPixels
@@ -1321,7 +1356,6 @@ namespace AnimChainsSheetPacker
                 "\n\t centerXoffset: " + centerXoffset
             );
 #endif
-
             return Decimal.ToSingle(centerXoffset);
         }
 
@@ -1334,9 +1368,15 @@ namespace AnimChainsSheetPacker
             decimal trimmedHeight = updatedFractPixelCoordinates.Bottom - updatedFractPixelCoordinates.Top;
             decimal trimmedWrongCenterY = trimmedHeight / 2M;
 
+            // Use offset from top
             //decimal trimmedGoodCenterY = originalCenterY - packerFrame.spriteSourceSize.y;
             decimal trimmedGoodCenterY = originalCenterY - offsetsFromOriginalSprite.y;
-            decimal centerYoffset = trimmedGoodCenterY - trimmedWrongCenterY;
+
+            decimal centerYoffset;
+            if (flipped)
+                centerYoffset = -(trimmedGoodCenterY - trimmedWrongCenterY);
+            else
+                centerYoffset = trimmedGoodCenterY - trimmedWrongCenterY;
 
 #if o
             Debug.WriteLine(
@@ -1353,7 +1393,6 @@ namespace AnimChainsSheetPacker
                 "\n\t centerYoffset: " + centerYoffset
             );
 #endif
-
             return Decimal.ToSingle(centerYoffset);
         }
 
