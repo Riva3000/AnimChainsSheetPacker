@@ -2,9 +2,9 @@
 {
     public class SSPRectSheet
     {
-        /// <summary>position of croped sprite in result sheet</summary>
+        /// <summary>position of trimed sprite in result sheet</summary>
         public int x;
-        /// <summary>position of croped sprite in result sheet</summary>
+        /// <summary>position of trimed sprite in result sheet</summary>
         public int y;
         /// <summary>size of result trimed sprite</summary>
         public int w;
