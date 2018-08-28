@@ -7,13 +7,13 @@ namespace AnimChainsSheetPacker.DataTypes
     public class PixelsFrame
     {
         /// <summary>FRB Frame coordinates converted (from UV coordinates or Fractional-Pixel coordinates) to Integral-Pixel coordinates. = Rounded down.</summary>
-        public uint Left;
+        public ushort Left;
         /// <summary>FRB Frame coordinates converted (from UV coordinates or Fractional-Pixel coordinates) to Integral-Pixel coordinates. = Rounded down.</summary>
-        public uint Right;
+        public ushort Right;
         /// <summary>FRB Frame coordinates converted (from UV coordinates or Fractional-Pixel coordinates) to Integral-Pixel coordinates. = Rounded up.</summary>
-        public uint Top;
+        public ushort Top;
         /// <summary>FRB Frame coordinates converted (from UV coordinates or Fractional-Pixel coordinates) to Integral-Pixel coordinates. = Rounded up.</summary>
-        public uint Bottom;
+        public ushort Bottom;
 
         /// <summary>FRB Frame coordinates converted from UV coordinates to Fractional-Pixel coordinates. Not rounded to Integral-Pixel.</summary>
         public decimal DecimalLeft;
@@ -24,8 +24,38 @@ namespace AnimChainsSheetPacker.DataTypes
         /// <summary>FRB Frame coordinates converted from UV coordinates to Fractional-Pixel coordinates. Not rounded to Integral-Pixel.</summary>
         public decimal DecimalBottom;
 
-        public PixelsFrame DuplicateOfPixelsFrame;
-        public AnimationFrameSave DuplicateOfFRBFrame;
+
+        #region    -- Duplicate / Master data
+
+        /// <summary>
+        /// Frame of which this Frame is "duplicate" = has same coordinates on original sprite sheet.
+        /// Only assigned if this frame is "duplicate" of other Frame.
+        /// </summary>
+        public PixelsFrame MasterPixelsFrame;
+        /// <summary>
+        /// Frame of which this Frame is "duplicate" = has same coordinates on original sprite sheet.
+        /// Only assigned if this frame is "duplicate" of other Frame.
+        /// </summary>
+        public AnimationFrameSave MasterFRBFrame;
+        /// <summary>
+        /// "Original" FRB Frame of this PixelsFrame. Only assigned if this frame is "duplicate" of other Frame.
+        /// </summary>
+        public AnimationFrameSave FRBFrame;
+
+        /// <summary>
+        /// For possible "duplicates", if this Frame is "Master"
+        /// </summary>
+        public float PackingCorrectionOffsetX;
+         /// <summary>
+        /// For possible "duplicates", if this Frame is "Master"
+        /// </summary>
+        public float PackingCorrectionOffsetY;
+
+        public bool ShrunkInPacking_Width;
+        public bool ShrunkInPacking_Height;
+        #endregion -- Duplicate / Master data END
+
+
 
         public bool HasZeroWidth;
         public bool HasZeroHeight;
@@ -34,7 +64,7 @@ namespace AnimChainsSheetPacker.DataTypes
         {
             string str = lineIndent + "PixelsFrame:";
 
-            if (DuplicateOfPixelsFrame == null)
+            if (MasterPixelsFrame == null)
             {
                 str +=
                     '\n' +
