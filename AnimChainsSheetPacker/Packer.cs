@@ -1,8 +1,11 @@
-﻿using System;
+﻿//#define o // debug [o]utput
+
+using System;
 using System.Collections.Generic;
 //using System.Linq;
 //using FlatRedBall.Graphics.Animation;
 using System.IO;
+using System.Diagnostics; // Process = starting 3rd party program
 //using System.Windows.Media.Imaging; // WPF bitmaps
 using System.Drawing; // WinForms bitmaps
 using System.Drawing.Imaging;
@@ -10,7 +13,7 @@ using FlatRedBall.Content.AnimationChain;
 //using System.Web.Script.Serialization; // JavaScriptSerializer
 using Newtonsoft.Json;
 using Microsoft.Xna.Framework;
-using System.Diagnostics;
+
 
 using Rectangle = System.Drawing.Rectangle;
 using Size = System.Drawing.Size;
@@ -340,10 +343,10 @@ namespace AnimChainsSheetPacker
             AnimationChainListSave animChainListSave, Bitmap spriteSheetBmp, string outputDir
         )
         {
-            // debug
+#if o
             Debug.WriteLine(" * achx CoordinatesType: " + animChainListSave.CoordinateType);
-
-            // conver List<AnimationChainSave> to my structure
+#endif
+            // Convert List<AnimationChainSave> to my structure
 
             List<AnimationChainSave> frbAnimChains = animChainListSave.AnimationChains;
 
@@ -356,16 +359,16 @@ namespace AnimChainsSheetPacker
             //foreach (var anim in animChainListSave.AnimationChains)
             for (int animI = 0; animI < frbAnimChains.Count; animI++)
             {
-                // debug
+#if o
                 Debug.WriteLine(" Anim " + animI);
-
+#endif
                 animsInPixels[animI] = new PixelsFrame[frbAnimChains[animI].Frames.Count];
 
                 for (int frameI = 0; frameI < frbAnimChains[animI].Frames.Count; frameI++)
                 {
-                    // debug
+#if o
                     Debug.WriteLine("  Frame " + frameI);
-
+#endif
                     frbFrame = frbAnimChains[animI].Frames[frameI];
 
                     // Is current Frame duplicate of other Frame ?
@@ -376,8 +379,10 @@ namespace AnimChainsSheetPacker
                     }
 
                     // Not duplicate
+#if o
                     Debug.WriteLine("   Not duplicate");
                     Debug.WriteLine(Testing.PrintFRBFrame(frbFrame, "     "));
+#endif
                     // 1. Convert to pixels
                     if (animChainListSave.CoordinateType == FlatRedBall.Graphics.TextureCoordinateType.Pixel)
                     {
@@ -390,12 +395,13 @@ namespace AnimChainsSheetPacker
                         };
                         pixelsFrame.HasZeroWidth = pixelsFrame.Left == pixelsFrame.Right;
                         pixelsFrame.HasZeroHeight = pixelsFrame.Top == pixelsFrame.Bottom;
-
+#if o
                         Debug.WriteLine(
                             "   Converted to int pixels"
                             + '\n' +
                             pixelsFrame.ToString("     ")
                         );
+#endif
                     }
                     else
                     {
@@ -476,7 +482,7 @@ namespace AnimChainsSheetPacker
         )
         {
             AnimationFrameSave frame;
-            int animSearchStop = animIndex + 1;
+            //int animSearchStop = animIndex + 1;
             int frameSearchStop;
 
             /*if (frameIndex == 0)
@@ -514,7 +520,7 @@ namespace AnimChainsSheetPacker
             {
                 if (animI == animIndex)
                 {
-                    // If I'm at current frame anim, set last checked frame to one before current frame
+                    // If I'm at current frame's anim, set last checked frame to one before current frame
 
                     frameSearchStop = frameIndex;
                 }
@@ -522,7 +528,7 @@ namespace AnimChainsSheetPacker
                 {
                     // Else if I'm at any preceding anim, and anim has frames, set last checked frame to last frame of anim
 
-                    frameSearchStop = animChainList[animI].Frames.Count - 1;
+                    frameSearchStop = animChainList[animI].Frames.Count;
                 }
                 else
                 {
@@ -537,9 +543,9 @@ namespace AnimChainsSheetPacker
 
                     if (frame != null && FramesEqual(currentFrame, frame))
                     {
-                        // debug
+#if o
                         Debug.WriteLine("   Duplicate of frame " + animI + " " + frameI);
-
+#endif
                         //duplicatesMapping.Add(new DuplicateFramesMapping(animIndex, frameIndex, animI, frameI));
                         duplicatesMapping[animIndex][frameIndex] =
                             new PixelsFrame
@@ -705,16 +711,16 @@ namespace AnimChainsSheetPacker
             // --scale 1        default
 
             args +=
-                " \"" + inputDir.TrimEnd('\\') + "\" \"" +
+                $" \"{ inputDir.TrimEnd('\\') }\" " 
+                +
                 // doesn't work:
                 //Path.Combine(outputDir, "Result.png");
                 // works:
-                outputDir.TrimEnd('\\')
-                //inputDir.TrimEnd('\\')
-                 + '"';
-
+                $"\"{ outputDir.TrimEnd('\\') }\""
+                ;
+#if o
             Debug.WriteLine(" * SpriteSheetPacker args:\n\t" + args + '\n');
-
+#endif
             var process = new Process {
                 StartInfo = new ProcessStartInfo
                 {
@@ -737,11 +743,11 @@ namespace AnimChainsSheetPacker
 
             var standardOutput = standardOutputReader.ReadToEnd();
             var standardError = standardErrorReader.ReadToEnd();
-
+#if o
             Debug.WriteLine(" * SpriteSheetPacker StandardOutput:\n" + standardOutput);
             Debug.WriteLine(" * SpriteSheetPacker StandardError:\n" + standardError);
             Debug.WriteLine(" * SpriteSheetPacker ExitCode: " + process.ExitCode);
-
+#endif
             // for SpriteSheetPacker apparently
             // 1 - no error = result files successfuly created
             // 0 - non-critical error = usualy something wrong with commandline params = no result files be created
@@ -835,6 +841,7 @@ namespace AnimChainsSheetPacker
         // - Fix transparent color
         public static Size ChangeResultSheetTransparentColor(string workDir, Color color)
         {
+            //                                                 since input directory (containing sprites) for 
             string resultSheetFilePath = Path.Combine(workDir, "Sprites.png");
 
             // v1: throsw GDI+ exception
@@ -1005,9 +1012,9 @@ namespace AnimChainsSheetPacker
 
 
                             #region    - Update FRB Frame offset
-
+#if o
                             Debug.WriteLine(" * Updating FRB Frame offset");
-
+#endif
                             // - Relative X Y - offset of frame in anim
                             // the sprite potentialy shrunk in packing. (it can never get bigger)
 
@@ -1030,7 +1037,7 @@ namespace AnimChainsSheetPacker
 
                                 // Acknowledge any previous offset (set on the Frame by anim creator)
                                 frbFrame.RelativeX += Decimal.ToSingle(centerXoffset) + offsetForAllFrames.X;
-
+#if o
                                 Debug.WriteLine(
                                     "\t originalWidth: " + originalFrameWidthInFractPixels
                                     +
@@ -1046,8 +1053,11 @@ namespace AnimChainsSheetPacker
                                     +
                                     "\n\t * frbFrame.RelativeX: " + frbFrame.RelativeX
                                 );
+#endif
                             }
+#if o
                             Debug.WriteLine("");
+#endif
                             if (originalFrameSizeInIntPixels.Height != sspFrame.frame.h)
                             {
                                 // calculate Frame Y offset
@@ -1062,7 +1072,7 @@ namespace AnimChainsSheetPacker
 
                                 // Acknowledge any previous offset (set on the Frame by anim creator)
                                 frbFrame.RelativeY += Decimal.ToSingle(centerYoffset) + offsetForAllFrames.Y;
-
+#if o
                                 Debug.WriteLine(
                                     "\t originalHeight: " + originalFrameHeightInFractPixels
                                     +
@@ -1078,6 +1088,7 @@ namespace AnimChainsSheetPacker
                                     +
                                     "\n\t * frbFrame.RelativeY: " + frbFrame.RelativeY
                                 );
+#endif
                             }
 
                             // ??
