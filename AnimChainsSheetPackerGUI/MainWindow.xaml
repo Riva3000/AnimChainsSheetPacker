@@ -14,6 +14,7 @@
         Title="AnimChains SpriteSheet packer for FlatRedBall" Height="800" Width="550" MinWidth="400" MaxWidth="650" Background="Gray" Icon="icon.ico">
     <Grid Grid.IsSharedSizeScope="True" >
         <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
             <!-- 0 top info -->
             <RowDefinition Height="Auto" />
             <!-- 1 files grid -->
@@ -36,12 +37,17 @@
             <RowDefinition />
         </Grid.RowDefinitions>
 
+        <StackPanel Orientation="Horizontal" Background="White">
+            <Button Content="Save project" Margin="5,0" Click="ButtonSaveProject_Click" />
+            <Button Content="Load project" Margin="5,0" Click="ButtonLoadProject_Click" />
+        </StackPanel>
+        
         <!-- top info -->
-        <Border Grid.Row="0" Margin="0,0,0,0" Padding="10" Background="{StaticResource BGBlueish}" >
+        <Border Grid.Row="1" Margin="0,0,0,0" Padding="10" Background="{StaticResource BGBlueish}" >
             <StackPanel Orientation="Horizontal" >
                 <TextBlock Text="Requires free " VerticalAlignment="Center" />
                 <Button Content="SpriteSheet Packer" VerticalAlignment="Center" Click="SpriteSheetPackerLink_Click" />
-                <TextBlock Text=" 3rd party app." VerticalAlignment="Center" />
+                <TextBlock Text=" 3rd party app, version 1.0.8." VerticalAlignment="Center" />
                 <!--<Button Content="Sources on Github" VerticalAlignment="Center" Margin="6,0,0,0" Click="SpriteSheetPackerSourceLink_Click" />-->
             </StackPanel>
         </Border>
@@ -49,7 +55,7 @@
 
 
         <!-- files grid -->
-        <Grid Grid.Row="1" MaxWidth="600" Margin="10,10,10,20">
+        <Grid Grid.Row="2" MaxWidth="600" Margin="10,10,10,20">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition />
                 <ColumnDefinition Width="Auto"/>
@@ -71,12 +77,12 @@
 
             <TextBlock Grid.Row="0" Text="Source .achx" Margin="0,3" FontWeight="Bold" />
             <TextBox Grid.Row="1" Grid.ColumnSpan="2" MaxLines="1" IsUndoEnabled="False"
-                     Text="{Binding SourceAchx}" />
+                     Text="{Binding Project.SourceAchx, UpdateSourceTrigger=PropertyChanged}" />
             <Button Grid.Column="2" Content="Browse" Grid.Row="1" Click="ButBrowseAchx_Click" />
 
             <TextBlock Grid.Row="3" Text="SpriteSheet Packer directory" Margin="0,3" FontWeight="Bold" />
             <TextBox Grid.Row="4" Grid.ColumnSpan="2" MaxLines="1" IsUndoEnabled="False" 
-                     Text="{Binding SSPDir}" />
+                     Text="{Binding SSPDir, UpdateSourceTrigger=PropertyChanged}" />
             <Button Grid.Row="4" Grid.Column="2" Content="Browse" Click="ButBrowseSSPDir_Click" />
 
             <TextBlock Grid.Row="6" Grid.ColumnSpan="3" TextWrapping="Wrap" Margin="0,3" >
@@ -85,7 +91,7 @@
                 (Leave empty is you want to overwrite source .achx and it's sprite sheet image)
             </TextBlock>
             <TextBox Grid.Row="7" MaxLines="1" IsUndoEnabled="False"
-                     Text="{Binding OutputDir}" />
+                     Text="{Binding Project.OutputDir, UpdateSourceTrigger=PropertyChanged}" />
             <Button Grid.Row="7" Grid.Column="1" Content="Browse" Click="ButBrowseOutputDir_Click"  />
             <Button Grid.Row="7" Grid.Column="2" Content="Clear" Click="ButClearOutputDir_Click"  />
 
@@ -95,7 +101,7 @@
                 (Only set if you want to keep (inspect) the operation's temporary files)
             </TextBlock>
             <TextBox Grid.Row="10" MaxLines="1" IsUndoEnabled="False"
-                     Text="{Binding WorkDir}" />
+                     Text="{Binding Project.WorkDir, UpdateSourceTrigger=PropertyChanged}" />
             <Button Grid.Row="10" Grid.Column="1" Content="Browse" Click="ButBrowseWorkDir_Click"  />
             <Button Grid.Row="10" Grid.Column="2" Content="Clear" Click="ButClearWorkDir_Click"  />
         </Grid>
@@ -103,9 +109,9 @@
 
 
         <!-- Sheet packing options grid -->
-        <Rectangle Grid.Row="2" Grid.RowSpan="3" Fill="{StaticResource BGBlueish}" />
-        <TextBlock Grid.Row="2" Text="Result packed sprite sheet options" DockPanel.Dock="Top" HorizontalAlignment="Center" Margin="10,6,10,0" />
-        <Grid Grid.Row="3" Margin="10,20,10,10" DockPanel.Dock="Top" MaxWidth="600" >
+        <Rectangle Grid.Row="3" Grid.RowSpan="3" Fill="{StaticResource BGBlueish}" />
+        <TextBlock Grid.Row="3" Text="Result packed sprite sheet options" DockPanel.Dock="Top" HorizontalAlignment="Center" Margin="10,6,10,0" />
+        <Grid Grid.Row="4" Margin="10,20,10,10" DockPanel.Dock="Top" MaxWidth="600" >
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="10" />
@@ -124,15 +130,15 @@
             <!--sheetBorder = 0, uint spritesBorders = 0, bool sheetPowerOf2 = false, uint maxSheetSize = 8192, bool forceSquareSheet-->
             <TextBlock Grid.Column="0" Grid.Row="0" Text="Sheet border" HorizontalAlignment="Right" Margin="0,0,10,0" />
             <xctk:IntegerUpDown Grid.Column="1" Grid.Row="0" MaxWidth="125"
-                                Minimum="0" DefaultValue="0" DisplayDefaultValueOnEmptyText="True" Value="{Binding SheetBorder}" />
+                                Minimum="0" DefaultValue="0" DisplayDefaultValueOnEmptyText="True" Value="{Binding Project.SheetBorder}" />
 
             <TextBlock Grid.Column="3" Grid.Row="0" Text="Sprites borders" HorizontalAlignment="Right" Margin="0,0,10,0" />
             <xctk:IntegerUpDown Grid.Column="4" Grid.Row="0" MaxWidth="125" 
-                                Minimum="0" DefaultValue="0" DisplayDefaultValueOnEmptyText="True" Value="{Binding SpritesBorders}" />
+                                Minimum="0" DefaultValue="0" DisplayDefaultValueOnEmptyText="True" Value="{Binding Project.SpritesBorders}" />
 
             <TextBlock Grid.Column="0" Grid.Row="2" Text="Sheet max size" HorizontalAlignment="Right" Margin="0,0,10,0" />
             <xctk:IntegerUpDown Grid.Column="1" Grid.Row="2" MaxWidth="125" 
-                                Minimum="1" DefaultValue="2048" DisplayDefaultValueOnEmptyText="True" Value="{Binding MaxSheetSize}" />
+                                Minimum="1" DefaultValue="2048" DisplayDefaultValueOnEmptyText="True" Value="{Binding Project.MaxSheetSize}" />
 
             <StackPanel Grid.Column="2" Grid.ColumnSpan="3" Grid.Row="2" Orientation="Horizontal" >
                 <StackPanel.Resources>
@@ -176,13 +182,13 @@
             </StackPanel>
 
             <CheckBox Grid.Row="4" Grid.ColumnSpan="2" Content="Sheet size power of 2" HorizontalAlignment="Center" 
-                      IsChecked="{Binding SheetPowerOf2}" />
+                      IsChecked="{Binding Project.SheetPowerOf2}" />
             <CheckBox Grid.Row="4" Grid.Column="3" Grid.ColumnSpan="2" Content="Sheet square" HorizontalAlignment="Center" 
-                      IsChecked="{Binding ForceSquareSheet}" />
+                      IsChecked="{Binding Project.ForceSquareSheet}" />
 
         </Grid>
 
-        <Grid Grid.Row="4" Margin="10,10,10,10" >
+        <Grid Grid.Row="5" Margin="10,10,10,10" >
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="10" />
@@ -200,7 +206,7 @@
             <ComboBox Name="ComboBoxColor" Grid.Column="2" ItemsSource="{Binding PredefinedColors}" DisplayMemberPath="Name" SelectedIndex="0" 
                       SelectionChanged="ComboBoxColor_SelectionChanged" />
             <!--, Mode=OneTime-->
-            
+
             <TextBlock Grid.Column="4" Text="R" VerticalAlignment="Center" Margin="4,2" />
             <xctk:ByteUpDown Name="NumColorR" Grid.Column="5" ShowButtonSpinner="False" DefaultValue="255" Value="255" DisplayDefaultValueOnEmptyText="True" />
             <TextBlock Grid.Column="6" Text="G" VerticalAlignment="Center" Margin="4,2" />
@@ -213,10 +219,10 @@
 
 
         <!-- achx options grid -->
-        <Rectangle Grid.Row="5" Grid.RowSpan="3" Fill="{DynamicResource BGRedish}" />
-        <TextBlock Grid.Row="5" Text="Result achx options" DockPanel.Dock="Top" HorizontalAlignment="Center" Margin="10,6,10,0" />
-        <TextBlock Grid.Row="6" Text="Add Relative offset to all Frames" DockPanel.Dock="Top" HorizontalAlignment="Center" Margin="10,6,10,0" />
-        <Grid Grid.Row="7" Margin="10,6,10,10" DockPanel.Dock="Top" MaxWidth="600" >
+        <Rectangle Grid.Row="6" Grid.RowSpan="3" Fill="{DynamicResource BGRedish}" />
+        <TextBlock Grid.Row="6" Text="Result achx options" DockPanel.Dock="Top" HorizontalAlignment="Center" Margin="10,6,10,0" />
+        <TextBlock Grid.Row="7" Text="Add Relative offset to all Frames" DockPanel.Dock="Top" HorizontalAlignment="Center" Margin="10,6,10,0" />
+        <Grid Grid.Row="8" Margin="10,6,10,10" DockPanel.Dock="Top" MaxWidth="600" >
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto" SharedSizeGroup="g1" />
                 <ColumnDefinition />
@@ -228,25 +234,25 @@
             <!--sheetBorder = 0, uint spritesBorders = 0, bool sheetPowerOf2 = false, uint maxSheetSize = 8192, bool forceSquareSheet-->
             <TextBlock Grid.Column="0" Grid.Row="0" Text="X" HorizontalAlignment="Right" Margin="0,0,10,0" />
             <xctk:DecimalUpDown Grid.Column="1" Grid.Row="0" MaxWidth="125"
-                                DefaultValue="0" DisplayDefaultValueOnEmptyText="True" Value="{Binding FramesRelativeX}" />
+                                DefaultValue="0" DisplayDefaultValueOnEmptyText="True" Value="{Binding Project.FramesRelativeX}" />
 
             <TextBlock Grid.Column="3" Grid.Row="0" Text="Y" HorizontalAlignment="Right" Margin="0,0,10,0" />
             <xctk:DecimalUpDown Grid.Column="4" Grid.Row="0" MaxWidth="125" 
-                                DefaultValue="0" DisplayDefaultValueOnEmptyText="True" Value="{Binding FramesRelativeY}" />
+                                DefaultValue="0" DisplayDefaultValueOnEmptyText="True" Value="{Binding Project.FramesRelativeY}" />
         </Grid>
 
 
 
 
         <!-- Start button -->
-        <StackPanel Grid.Row="8" Margin="10,20,10,20" MaxWidth="600" >
+        <StackPanel Grid.Row="9" Margin="10,20,10,20" MaxWidth="600" >
             <Button Name="ButStart" Content="Pack" HorizontalAlignment="Center" Padding="20,6" FontWeight="Bold" FontSize="14"
                 Click="ButStart_Click" />
         </StackPanel>
 
 
         <!-- Log -->
-        <FlowDocumentScrollViewer Name="FDSVMessages" Grid.Row="9" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+        <FlowDocumentScrollViewer Name="FDSVMessages" Grid.Row="10" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
 
             <!--moved to Style-->
             <!--<FlowDocument Name="FDMessagesStack" 
@@ -264,5 +270,6 @@
             </FlowDocument>
 
         </FlowDocumentScrollViewer >
+        
     </Grid>
 </Window>

@@ -4,7 +4,8 @@ https://github.com/vchelaru/FlatRedBall
 Uses amakaseev's SpriteSheet Packer commandline tool for the packing operations.  
 https://github.com/amakaseev/sprite-sheet-packer  
 The tool has to be present on the computer for AnimChainsSheetPacker to work.  
-  
+AnimChainsSheetPacker is tested with amakaseev's SpriteSheet Packer version 1.0.8 only.
+
 --- Parts:  
 - AnimChainsSheetPacker.dll  
     Contain all the packing and achx generation functionality.
@@ -13,6 +14,6 @@ The tool has to be present on the computer for AnimChainsSheetPacker to work.
   
 - AnimChainsSheetPackerGUI  
     Windows GUI frontend for the library.  
-    Not yet finished and probably unstable. Do not use with live data.
+    Not fully finished. May be unstable.
     
   

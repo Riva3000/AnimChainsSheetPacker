@@ -23,10 +23,11 @@ using Size = System.Drawing.Size;
 using Color = System.Drawing.Color;
 
 using AnimChainsSheetPacker.DataTypes;
+using AnimChainsSheetPacker.ProjectDataTypes;
 
 // debug
 using System.Text;
-
+using System.Xml.Serialization;
 
 namespace AnimChainsSheetPacker
 {
@@ -34,87 +35,12 @@ namespace AnimChainsSheetPacker
     {
         //<!--sheetBorder = 0, uint spritesBorders = 0, bool sheetPowerOf2 = false, uint maxSheetSize = 8192, bool forceSquareSheet-->
 
-        #region    -- SpriteSheet params
-        private int _SheetBorder = 0;
-        public int SheetBorder
+        private Project _Project = new Project();
+        public Project Project
         {
-            get { return _SheetBorder; }
-            set { SetField(ref _SheetBorder, value, "SheetBorder"); }
+            get { return _Project; }
+            set { SetField(ref _Project, value, "Project"); }
         }
-
-#if dbgPrefill
-        private int _SpritesBorders = 1;
-#else
-        private int _SpritesBorders = 0;
-#endif
-        public int SpritesBorders
-        {
-            get { return _SpritesBorders; }
-            set { SetField(ref _SpritesBorders, value, "SpritesBorders"); }
-        }
-
-        private int _MaxSheetSize = 2048;
-        public int MaxSheetSize
-        {
-            get { return _MaxSheetSize; }
-            set { SetField(ref _MaxSheetSize, value, "MaxSheetSize"); }
-        }
-
-        private bool _SheetPowerOf2;
-        public bool SheetPowerOf2
-        {
-            get { return _SheetPowerOf2; }
-            set { SetField(ref _SheetPowerOf2, value, "SheetPowerOf2"); }
-        }
-
-        private bool _ForceSquareSheet;
-        public bool ForceSquareSheet
-        {
-            get { return _ForceSquareSheet; }
-            set { SetField(ref _ForceSquareSheet, value, "ForceSquareSheet"); }
-        }
-
-
-        private Color? _SheetBGColor = null;
-        public Color? SheetBGColor
-        {
-            get { return _SheetBGColor; }
-            set { SetField(ref _SheetBGColor, value, "SheetBGColor"); }
-        }
-        #endregion -- SpriteSheet params END
-
-        #region    -- Output achx params
-
-        private float _FramesRelativeX;
-        public float FramesRelativeX
-        {
-            get { return _FramesRelativeX; }
-            set { SetField(ref _FramesRelativeX, value, "FramesRelativeX"); }
-        }
-
-        private float _FramesRelativeY;
-        public float FramesRelativeY
-        {
-            get { return _FramesRelativeY; }
-            set { SetField(ref _FramesRelativeY, value, "FramesRelativeY"); }
-        }
-        #endregion -- Output achx params END
-
-        #region    -- Paths
-#if dbgPrefill
-        private string _OutputDir = 
-            //@"W:\Programing\VisualStudio2015 Projects\FRBAnimChainsSheetPacker_misc\TestData\Output\";
-            @"W:\Programing\VisualStudio2015 Projects\FRBAnimChainsSheetPacker_misc\TestData fliped frames\Output\";
-#else
-        private string _OutputDir;
-#endif
-        public string OutputDir
-        {
-            get { return _OutputDir; }
-            set { SetField(ref _OutputDir, value, "OutputDir"); }
-        }
-
-
 
 #if dbgPrefill
         private string _SSPDir =
@@ -129,40 +55,10 @@ namespace AnimChainsSheetPacker
             set { SetField(ref _SSPDir, value, "SSPDir"); }
         }
 
-
-
-#if dbgPrefill
-        
-        private string _SourceAchx = 
-            // MinimalTest01.achx - achx with one anim with one frame
-            //@"W:\Programing\VisualStudio2015 Projects\FRBAnimChainsSheetPacker_misc\TestData\Input\MinimalTest01.achx";
-            @"W:\Programing\VisualStudio2015 Projects\FRBAnimChainsSheetPacker_misc\TestData fliped frames\Input\TestArrow.achx";
-#else
-        private string _SourceAchx;
-#endif
-        public string SourceAchx
-        {
-            get { return _SourceAchx; }
-            set { SetField(ref _SourceAchx, value, "SourceAchx"); }
-        }
-
-
-#if dbgPrefill
-        private string _WorkDir = 
-            //@"W:\Programing\VisualStudio2015 Projects\FRBAnimChainsSheetPacker_misc\TestData\Work\";
-            @"W:\Programing\VisualStudio2015 Projects\FRBAnimChainsSheetPacker_misc\TestData fliped frames\Work\";
-#else
-        private string _WorkDir;
-#endif
-        public string WorkDir
-        {
-            get { return _WorkDir; }
-            set { SetField(ref _WorkDir, value, "WorkDir"); }
-        }
-        #endregion -- Paths END
-
         private readonly ColorData[] _PredefinedColors;
         public ColorData[] PredefinedColors { get { return _PredefinedColors; } }
+
+        private const string _SETTING_FILE_NAME = "settings.txt";
 
 
 
@@ -170,17 +66,20 @@ namespace AnimChainsSheetPacker
 
         public MainWindow()
         {
-            DataContext = this;
+            _LoadSettings();
 
             _PredefinedColors = _BuildKnownColors();
             //MessageBox.Show("_PredefinedColors.Length " + _PredefinedColors.Length + "  _PredefinedColors[0].Name: " + _PredefinedColors[0].Name);
+
+            Closing += _This_Closing;
+
+            DataContext = this;
 
             InitializeComponent();
 
             //VisualTreeHelper.
             //FDSVMessages
         }
-
 
 
 
@@ -249,6 +148,44 @@ namespace AnimChainsSheetPacker
             return false;
         }
 
+        private bool _ShowSaveFileDialog(string title, string filter, out string resultFilePathName)
+        {
+#if o
+            Debug.WriteLine(" * ShowStandardOpenFileDialog()");
+#endif
+            var dialog = new SaveFileDialog
+            {
+                DereferenceLinks = true, // default is false
+                //CheckFileExists = true,
+                CheckPathExists = true,
+                //Multiselect = multipleImages, // default is false
+                // openFileDialog.ValidateNames ??
+
+                Title = title,
+
+                // Set filter for file extension and default file extension 
+                //DefaultExt = ".vpm",
+                //Filter = "JPEG Files (*.jpeg)|*.jpeg|JPG Files (*.jpg)|*.jpg|PNG Files (*.png)|*.png|BMP Files (*.bmp)|*.bmp|GIF Files (*.gif)|*.gif"
+                //Filter = "PNG File (*.png)|*.png",
+                Filter = filter,
+                //FilterIndex = 0,
+
+                //FileName = System.IO.Path.GetFileName(filePathName),
+                //InitialDirectory = path //System.IO.Path.GetDirectoryName(path)
+            };
+
+            var dialogResult = dialog.ShowDialog();
+
+            if (dialogResult.HasValue && dialogResult.Value && !String.IsNullOrWhiteSpace(dialog.FileName))
+            {
+                resultFilePathName = dialog.FileName;
+                return true;
+            }
+
+            resultFilePathName = null;
+            return false;
+        }
+
         private void _AddMsg(string msg, Brush textColor = null)
         {
             //FlowDocument
@@ -279,14 +216,14 @@ namespace AnimChainsSheetPacker
             // ------------------ Packer code
             // -- Preparation
             bool temporaryWorkDir = false;
-            if (_WorkDir == null)
+            if (_Project.WorkDir == null)
             {
                 workDirectory = Path.Combine(Path.GetTempPath(), "AnimChainsSheetPacker_" + Guid.NewGuid().ToString());
                 temporaryWorkDir = true;
             }
             else
             {
-                workDirectory = _WorkDir;
+                workDirectory = _Project.WorkDir;
             }
             if (!Directory.Exists(workDirectory))
             {
@@ -304,7 +241,7 @@ namespace AnimChainsSheetPacker
             //Process.Start(workDirectory);
             //return;
 
-            bool overwriteInputFiles = this._OutputDir == null;
+            bool overwriteInputFiles = _Project.OutputDir == null;
 
 
 
@@ -314,7 +251,7 @@ namespace AnimChainsSheetPacker
 #endif
             _AddMsg(" - Loading Source achx - ");
 
-            var animChainListSave = Packer.LoadAchx(_SourceAchx);
+            var animChainListSave = Packer.LoadAchx(_Project.SourceAchx);
             //Debug.WriteLine(" * animChainList: " + (animChainList != null ? "loaded Count: " + animChainList.AnimationChains.Count : "null"));
 
 
@@ -331,7 +268,7 @@ namespace AnimChainsSheetPacker
             string originalSpriteSheetFileName;
             Bitmap originalSpriteSheetBmp = Packer.LoadOriginalSpriteSheets(
                 animChainListSave,
-                Path.GetDirectoryName(_SourceAchx), // achx dir   NOT path file name
+                Path.GetDirectoryName(_Project.SourceAchx), // achx dir   NOT path file name
                 out originalSpriteSheetDir,
                 out originalSpriteSheetFileName
             );
@@ -396,7 +333,7 @@ namespace AnimChainsSheetPacker
 
                 //2, 2, true
 
-                (uint)_SheetBorder, (uint)_SpritesBorders, _SheetPowerOf2, (uint)_MaxSheetSize, _ForceSquareSheet
+                (uint)_Project.SheetBorder, (uint)_Project.SpritesBorders, _Project.SheetPowerOf2, (uint)_Project.MaxSheetSize, _Project.ForceSquareSheet
             );
 
 
@@ -429,10 +366,10 @@ namespace AnimChainsSheetPacker
             _AddMsg(" - Loading result SpriteSheet - ");
 
             Size resultSheetSize;
-            if (_SheetBGColor.HasValue)
+            if (_Project.SheetBGColor.HasValue)
             {
                 _AddMsg("Updating result SpriteSheet");
-                resultSheetSize = Packer.ChangeResultSheetTransparentColor(workDirectory, _SheetBGColor.Value);
+                resultSheetSize = Packer.ChangeResultSheetTransparentColor(workDirectory, _Project.SheetBGColor.Value);
             }
             else
                 resultSheetSize = Packer.GetResultSheetSize(workDirectory);
@@ -451,7 +388,7 @@ namespace AnimChainsSheetPacker
                 pixelAnims,
                 packedFramesData,
                 resultSheetSize, 
-                new Microsoft.Xna.Framework.Vector2(_FramesRelativeX, _FramesRelativeY)  // offsetForAllFrames
+                new Microsoft.Xna.Framework.Vector2(_Project.FramesRelativeX, _Project.FramesRelativeY)  // offsetForAllFrames
             );
 
 
@@ -465,7 +402,7 @@ namespace AnimChainsSheetPacker
                 overwriteInputFiles, 
                 originalSpriteSheetDir, originalSpriteSheetFileName, 
                 workDirectory, 
-                _OutputDir
+                _Project.OutputDir
             );
 
 #if o
@@ -475,15 +412,15 @@ namespace AnimChainsSheetPacker
             if (overwriteInputFiles)
             {
                 // Save achx to original achx path
-                Packer.SaveAchx(animChainListSave, _SourceAchx, _SourceAchx);
+                Packer.SaveAchx(animChainListSave, _Project.SourceAchx, _Project.SourceAchx);
             }
             else // not overwriteInputFiles - means outputDirectory != null
             {
                 Packer.SaveAchx(
                     animChainListSave,
-                    Path.Combine(_OutputDir, "Packed.achx"),
+                    Path.Combine(_Project.OutputDir, "Packed.achx"),
                     // Path.Combine(outputDirectory, Path.GetFileName(inputAchxFilePath))
-                    _SourceAchx
+                    _Project.SourceAchx
                 );
             }
 
@@ -532,6 +469,36 @@ namespace AnimChainsSheetPacker
             return knownColors;
         }
 
+        private void _LoadSettings()
+        {
+            // Does settings file exist ? (in app root)
+            if (File.Exists( _SETTING_FILE_NAME ))
+            {
+                System.IO.StreamReader file = new System.IO.StreamReader( _SETTING_FILE_NAME );
+
+                string line = file.ReadLine();
+                if (line != null)
+                {
+                    SSPDir = line;
+                }
+
+                file.Close();
+            }
+        }
+
+        private void _SaveSettings()
+        {
+            if (! String.IsNullOrWhiteSpace(_SSPDir) )
+                File.WriteAllText( _SETTING_FILE_NAME, _SSPDir );
+        }
+
+
+
+
+        private void _This_Closing(object sender, CancelEventArgs e)
+        {
+            _SaveSettings();
+        }
 
         private void SpriteSheetPackerLink_Click(object sender, RoutedEventArgs e)
         {
@@ -547,7 +514,7 @@ namespace AnimChainsSheetPacker
             string path;
             if (_ShowOpenFileDialog("Select source FRB AnimatinChains file", "AnimatinChains (*.achx)|*.achx", out path))
             {
-                SourceAchx = path;
+                _Project.SourceAchx = path;
             }
         }
 
@@ -588,12 +555,12 @@ namespace AnimChainsSheetPacker
             if (dialogResult.HasValue && dialogResult.Value)
             //&& !String.IsNullOrWhiteSpace(dialog.FileName))
             {
-                OutputDir = Path.GetDirectoryName( dialog.FileName );
+                _Project.OutputDir = Path.GetDirectoryName( dialog.FileName );
             }
         }
         private void ButClearOutputDir_Click(object sender, RoutedEventArgs e)
         {
-            OutputDir = null;
+            _Project.OutputDir = null;
         }
 
         private void ButBrowseWorkDir_Click(object sender, RoutedEventArgs e)
@@ -624,12 +591,12 @@ namespace AnimChainsSheetPacker
             if (dialogResult.HasValue && dialogResult.Value)
             //&& !String.IsNullOrWhiteSpace(dialog.FileName))
             {
-                WorkDir = Path.GetDirectoryName( dialog.FileName );
+                _Project.WorkDir = Path.GetDirectoryName( dialog.FileName );
             }
         }
         private void ButClearWorkDir_Click(object sender, RoutedEventArgs e)
         {
-            WorkDir = null;
+            _Project.WorkDir = null;
         }
 
         private void ButStart_Click(object sender, RoutedEventArgs e)
@@ -638,12 +605,12 @@ namespace AnimChainsSheetPacker
             {
                 #region    ------------------ inputs error checking
 
-                if (String.IsNullOrWhiteSpace(_SourceAchx))
+                if (String.IsNullOrWhiteSpace(_Project.SourceAchx))
                 {
                     _AddMsg("Select input .achx file.", Brushes.Yellow);
                     return;
                 }
-                else if (!File.Exists(_SourceAchx))
+                else if (!File.Exists(_Project.SourceAchx))
                 {
                     _AddMsg("Can not find input .achx file.", Brushes.Yellow);
                     return;
@@ -661,19 +628,19 @@ namespace AnimChainsSheetPacker
                 }
 
                 //
-                if (_OutputDir == null)
+                if (_Project.OutputDir == null)
                 {
                     var userChoice = MessageBox.Show("Really overwrite input .achx and it's sprite sheet image with resulting packed versions ?\n\nIf you do not want to overwrite source files, choose output directory (that is different than that of source .achx file).", "Overwrite", MessageBoxButton.YesNo);
                     if (userChoice != MessageBoxResult.Yes)
                         return;
                 }
-                else if (String.IsNullOrWhiteSpace(_OutputDir))
+                else if (String.IsNullOrWhiteSpace(_Project.OutputDir))
                 {
                     _AddMsg("Wrong output directory path selected.", Brushes.Yellow);
                     return;
                 }
 
-                if (_WorkDir != null && String.IsNullOrWhiteSpace(_WorkDir))
+                if (_Project.WorkDir != null && String.IsNullOrWhiteSpace(_Project.WorkDir))
                 {
                     _AddMsg("Wrong work directory path selected.", Brushes.Yellow);
                     return;
@@ -780,7 +747,7 @@ namespace AnimChainsSheetPacker
 
         private void ButSheetMaxSize_Click(object sender, RoutedEventArgs e)
         {
-            MaxSheetSize = (int)(sender as Button).Tag;
+            _Project.MaxSheetSize = (int)(sender as Button).Tag;
         }
 
         private int _ComboBoxColorLastIndex = 0;
@@ -789,14 +756,14 @@ namespace AnimChainsSheetPacker
             // special cases:
             if (ComboBoxColor.SelectedIndex == 0) // Color = None
             {
-                SheetBGColor = null;
+                _Project.SheetBGColor = null;
                 _ComboBoxColorLastIndex = ComboBoxColor.SelectedIndex;
             }
             else if (ComboBoxColor.SelectedIndex == 1) // Use custom color
             {
                 if (NumColorR.Value.HasValue && NumColorG.Value.HasValue && NumColorB.Value.HasValue)
                 {
-                    SheetBGColor = Color.FromArgb(NumColorR.Value.Value, NumColorG.Value.Value, NumColorG.Value.Value);
+                    _Project.SheetBGColor = Color.FromArgb(NumColorR.Value.Value, NumColorG.Value.Value, NumColorG.Value.Value);
                     _ComboBoxColorLastIndex = ComboBoxColor.SelectedIndex;
                 }
                 else
@@ -807,8 +774,25 @@ namespace AnimChainsSheetPacker
             // Predefined named colors
             else
             {
-                SheetBGColor = _PredefinedColors[ComboBoxColor.SelectedIndex].Color;
+                _Project.SheetBGColor = _PredefinedColors[ComboBoxColor.SelectedIndex].Color;
                 _ComboBoxColorLastIndex = ComboBoxColor.SelectedIndex;
+            }
+        }
+
+        private void ButtonSaveProject_Click(object sender, RoutedEventArgs e)
+        {
+            string filePath; // = "TestProject.acspx";
+            if (_ShowSaveFileDialog("File name for Project", "project file (*.acspx)|*.acspx", out filePath))
+            {
+                ProjectSerialization.SaveProject(_Project, filePath);
+            }
+        }
+        private void ButtonLoadProject_Click(object sender, RoutedEventArgs e)
+        {
+            string filePath; // = "TestProject.acspx";
+            if (_ShowOpenFileDialog("Project file to load", "project file (*.acspx)|*.acspx", out filePath))
+            {
+                Project = ProjectSerialization.LoadProject(filePath);
             }
         }
     }
